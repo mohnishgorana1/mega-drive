@@ -4,6 +4,8 @@ import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { cn } from "@/lib/utils";
+import { ClerkProvider } from "@clerk/nextjs";
+import { dark } from "@clerk/themes";
 
 const fontSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -23,15 +25,25 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={cn('min-h-screen bg-dark-300 font-sans antialiased', fontSans.className)}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-        >
-          {children}
-        </ThemeProvider>
-      </body>
-    </html>
+    <ClerkProvider
+      appearance={{
+        baseTheme: dark,
+        variables: {
+          colorPrimary: "#3371ff",
+          fontSize: "16px"
+        },
+      }}>
+
+      <html lang="en">
+        <body className={cn('min-h-screen bg-dark-300 font-sans antialiased', fontSans.className)}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+          >
+              {children}
+          </ThemeProvider>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

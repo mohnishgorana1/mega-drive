@@ -48,27 +48,27 @@ export default function Home() {
           </Select>
         </div>
       </div>
-      <div className="grid grid-cols-5 gap-y-12 text-center  pt-4">
-        <div className="border h-36 w-36 flex items-center justify-center">File</div>
-        <div className="border h-36 w-36 flex items-center justify-center">File</div>
-        <div className="border h-36 w-36 flex items-center justify-center">File</div>
-        <div className="border h-36 w-36 flex items-center justify-center">File</div>
-        <div className="border h-36 w-36 flex items-center justify-center">File</div>
-        <div className="border h-36 w-36 flex items-center justify-center">File</div>
-        <div className="border h-36 w-36 flex items-center justify-center">File</div>
-        <div className="border h-36 w-36 flex items-center justify-center">File</div>
-        <div className="border h-36 w-36 flex items-center justify-center">File</div>
-        <div className="border h-36 w-36 flex items-center justify-center">File</div>
-        <div className="border h-36 w-36 flex items-center justify-center">File</div>
-        <div className="border h-36 w-36 flex items-center justify-center">File</div>
-        <div className="border h-36 w-36 flex items-center justify-center">File</div>
-        <div className="border h-36 w-36 flex items-center justify-center">File</div>
-        <div className="border h-36 w-36 flex items-center justify-center">File</div>
-        <div className="border h-36 w-36 flex items-center justify-center">File</div>
-        <div className="border h-36 w-36 flex items-center justify-center">File</div>
-        <div className="border h-36 w-36 flex items-center justify-center">File</div>
-        <div className="border h-36 w-36 flex items-center justify-center">File</div>
-        <div className="border h-36 w-36 flex items-center justify-center">File</div>
+      <div className="grid grid-cols-5 flex-wrap gap-y-12 text-center  pt-4">
+        <div className="border h-16 w-16 sm:h-36 sm:w-36 flex items-center justify-center">File</div>
+        <div className="border h-16 w-16 sm:h-36 sm:w-36 flex items-center justify-center">File</div>
+        <div className="border h-16 w-16 sm:h-36 sm:w-36 flex items-center justify-center">File</div>
+        <div className="border h-16 w-16 sm:h-36 sm:w-36 flex items-center justify-center">File</div>
+        <div className="border h-16 w-16 sm:h-36 sm:w-36 flex items-center justify-center">File</div>
+        <div className="border h-16 w-16 sm:h-36 sm:w-36 flex items-center justify-center">File</div>
+        <div className="border h-16 w-16 sm:h-36 sm:w-36 flex items-center justify-center">File</div>
+        <div className="border h-16 w-16 sm:h-36 sm:w-36 flex items-center justify-center">File</div>
+        <div className="border h-16 w-16 sm:h-36 sm:w-36 flex items-center justify-center">File</div>
+        <div className="border h-16 w-16 sm:h-36 sm:w-36 flex items-center justify-center">File</div>
+        <div className="border h-16 w-16 sm:h-36 sm:w-36 flex items-center justify-center">File</div>
+        <div className="border h-16 w-16 sm:h-36 sm:w-36 flex items-center justify-center">File</div>
+        <div className="border h-16 w-16 sm:h-36 sm:w-36 flex items-center justify-center">File</div>
+        <div className="border h-16 w-16 sm:h-36 sm:w-36 flex items-center justify-center">File</div>
+        <div className="border h-16 w-16 sm:h-36 sm:w-36 flex items-center justify-center">File</div>
+        <div className="border h-16 w-16 sm:h-36 sm:w-36 flex items-center justify-center">File</div>
+        <div className="border h-16 w-16 sm:h-36 sm:w-36 flex items-center justify-center">File</div>
+        <div className="border h-16 w-16 sm:h-36 sm:w-36 flex items-center justify-center">File</div>
+        <div className="border h-16 w-16 sm:h-36 sm:w-36 flex items-center justify-center">File</div>
+        <div className="border h-16 w-16 sm:h-36 sm:w-36 flex items-center justify-center">File</div>
       </div>
 
     </section>

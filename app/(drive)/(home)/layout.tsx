@@ -7,10 +7,12 @@ import { usePathname } from 'next/navigation'
 import React, { ReactNode, useState } from 'react'
 import { IoSearch } from "react-icons/io5";
 
+
 function HomeLayout({ children }: { children: ReactNode }) {
     const pathName = usePathname()
-
     const [searchKeyword, setSearchKeyword] = useState("")
+
+
 
 
     return (

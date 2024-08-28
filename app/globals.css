@@ -25,9 +25,11 @@
   }
 }
 
-
 @layer utilities {
   /* ===== UTILITIES */
+  .auth-page {
+    @apply flex h-screen w-full flex-col items-center justify-center gap-10 py-10;
+  }
   .sidebar {
     @apply remove-scrollbar w-full max-w-72 flex-col overflow-auto bg-black-800 px-7 py-10;
   }
@@ -43,7 +45,6 @@
   .clip-text {
     @apply bg-clip-text text-transparent;
   }
-
 
   .header {
     @apply text-32-bold md:text-36-bold;
@@ -274,7 +275,6 @@
   }
 }
 
-
 /* =====  REACT PHONE NUMBER INPUT OVERRIDES */
 .PhoneInputInput {
   outline: none;
@@ -287,3 +287,39 @@
 .PhoneInputInput::placeholder {
   color: #1a1d21;
 }
+
+
+
+/* ======================== Clerk Override */
+/* .cl-avatarBox {
+  width: 36px;
+  height: 36px;
+}
+
+.cl-userButtonTrigger {
+  height: fit-content !important;
+}
+
+.cl-cardBox,
+.cl-signIn-start,
+.cl-signUp-start,
+.cl-footer {
+  background: #060d18;
+  box-shadow: none;
+  padding: 20px;
+}
+
+.cl-socialButtonsBlockButton,
+.cl-socialButtonsBlockButton:hover {
+  height: 40px;
+  background-color: #3371ff;
+  color: #fff;
+}
+
+.cl-internal-2gzuzc {
+  filter: brightness(1000%);
+}
+
+.cl-logoBox {
+  height: 52px;
+} */
