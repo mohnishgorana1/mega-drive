@@ -1,7 +1,7 @@
 export const navLinks = [
     {
         route: "/",
-        label: "Home"
+        label: "All Files"
     },
     {
         route: "/trash",
@@ -9,11 +9,6 @@ export const navLinks = [
     }, {
         route: "/favourites",
         label: "Favourites"
-    }, {
-        route: "/",
-        label: "Home"
-    }, {
-        route: "/",
-        label: "Home"
-    },
+    }, 
+    
 ];
