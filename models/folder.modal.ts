@@ -1,5 +1,5 @@
-import mongoose, { Document, Schema } from 'mongoose';
-import File, { IFile } from './file.schema'; // Import File schema
+import mongoose, { Document, models, Schema } from 'mongoose';
+import File, { IFile } from './file.modal'; // Import File schema
 
 // Define the interface for the Folder document
 export interface IFolder extends Document {
@@ -48,6 +48,6 @@ const folderSchema = new Schema<IFolder>({
 });
 
 // Create the Folder model
-const Folder = mongoose.model<IFolder>('Folder', folderSchema);
+const Folder = models?.Folder || mongoose.model<IFolder>('Folder', folderSchema);
 
 export default Folder;

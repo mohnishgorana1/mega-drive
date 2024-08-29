@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, models, Schema } from 'mongoose';
 
 // Define the interface for the File document
 export interface IFile extends Document {
@@ -44,6 +44,6 @@ const fileSchema = new Schema<IFile>({
 });
 
 // Create the File model
-const File = mongoose.model<IFile>('File', fileSchema);
+const File = models?.File ||  mongoose.model<IFile>('File', fileSchema);
 
 export default File;
