@@ -42,7 +42,8 @@ const folderSchema = new Schema<IFolder>({
     ], // Assuming File schema is embedded here
     folders: [
         {
-            type: Schema.Types.Mixed
+            type: Schema.Types.ObjectId,
+            ref: "Folder"
         }
     ] // Assuming subfolders are embedded here
 });

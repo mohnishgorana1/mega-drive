@@ -17,8 +17,8 @@ function UploadFileModal() {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <button className='rounded-xl text-xl py-1 shadow-md px-8 bg-gradient-to-br from-blue-950 from-[40%] to-blue-700 hover:bg-gradient-to-tl hover:from-blue-600 hover:from-[10%] hover:to-blue-700 duration-500 ease-in-out'>
-                    Upload
+                <button className='upload-file-modal-btn w-full'>
+                    Upload File
                 </button>
             </DialogTrigger>
             <DialogContent className='bg-dark-400 border-0 px-8 py-16 '>

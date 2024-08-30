@@ -12,10 +12,10 @@ export const createUser = async (user: {
     createdAt: Date;
 }) => {
     try {
-        console.log("Creating User");
+        // console.log("Creating User");
 
         await dbConnect();
-        console.log("DB CONNECTED now create user");
+        // console.log("DB CONNECTED now create user");
 
 
         const newUser = await User.create(user)

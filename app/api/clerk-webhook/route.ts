@@ -64,8 +64,7 @@ export const POST = async (req: Request) => {
 
         const { id, email_addresses, image_url, first_name, last_name } = evt.data
 
-
-        console.log("Creating user details", id, email_addresses[0].email_address, image_url, first_name, last_name);
+        // console.log("Creating user details", id, email_addresses[0].email_address, image_url, first_name, last_name);
 
         const user = {
             clerkId: id,
@@ -74,18 +73,18 @@ export const POST = async (req: Request) => {
             createdAt: new Date(),
             avatar: image_url
         }
-        console.log("USER", user);
+        // console.log("USER", user);
 
         const newUser = await createUser(user);
 
         if (newUser) {
-            await clerkClient().users.updateUserMetadata(id, {
+            await clerkClient.users.updateUser(id, {
                 publicMetadata: {
-                    userId: newUser._id
+                    userMongoId: newUser._id.toString()
                 }
             })
         }
-        console.log("User created success");
+        console.log("User created success", newUser);
         return NextResponse.json({ message: "New User Created", user: newUser })
     }
     if (eventType == "user.deleted") {

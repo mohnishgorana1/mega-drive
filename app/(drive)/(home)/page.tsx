@@ -12,10 +12,13 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
+
+// # Main page for displaying files and folders at the root level
 export default function Home() {
   const [isGridView, setIsGridView] = useState(true)
   useEffect(() => {
     console.log(isGridView);
+    
 
   }, [isGridView, setIsGridView])
   return (
