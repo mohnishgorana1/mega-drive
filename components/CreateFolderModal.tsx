@@ -40,7 +40,7 @@ const CreateFolderModal = () => {
       parentFolderId,
       userId: userMongoId
     }
-    console.log("Payload to creaye folder", payload);
+    console.log("Payload to create folder", payload);
 
     try {
       const response = await axios.post('/api/folder/create-folder', {

@@ -2,10 +2,7 @@
 import CreateFolderModal from '@/components/CreateFolderModal'
 import Header from '@/components/Header'
 import Sidebar from '@/components/Sidebar'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import UploadFileModal from '@/components/UploadFileModal'
-import { useUser } from '@clerk/nextjs'
 import { usePathname } from 'next/navigation'
 import React, { ReactNode, useEffect, useState } from 'react'
 import { IoSearch } from "react-icons/io5";
@@ -15,14 +12,19 @@ function HomeLayout({ children }: { children: ReactNode }) {
     const pathName = usePathname()
     const [searchKeyword, setSearchKeyword] = useState("")
     const [isValidLocationToCreateFolder, setIsValidLocationToCreateFolder] = useState(false)
-
-  
+    const [isValidLocationToUploadFile, setIsValidLocationToUploadFile] = useState(false)
+    const [currentFolderId, setCurrentFolderId] = useState<string | null>(null)
 
     useEffect(() => {
         // Check if the pathname is valid for folder creation (i.e., "/" or "/[folderId]")
         // const isRootOrFolder = pathName === "/" || /^\/[a-zA-Z0-9]+$/.test(pathName)
         const isTrashOrFavourites = pathName === "/favourites" || pathName === "/trash"
         setIsValidLocationToCreateFolder(!isTrashOrFavourites);
+        setIsValidLocationToUploadFile(!isTrashOrFavourites);
+
+        const folderId = pathName.split("/")[1] === "" ? null : pathName.split("/")[1]
+        setCurrentFolderId(folderId)
+
     }, [pathName])
 
     return (
@@ -51,7 +53,11 @@ function HomeLayout({ children }: { children: ReactNode }) {
                                         <CreateFolderModal />
                                     )
                                 }
-                                <UploadFileModal />
+                                {
+                                    isValidLocationToUploadFile && (
+                                        <UploadFileModal currentFolderId={currentFolderId} />
+                                    )
+                                }
                             </div>
                         </header>
                         <main className='mt-5'>

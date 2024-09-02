@@ -37,7 +37,8 @@ const folderSchema = new Schema<IFolder>({
     },
     files: [
         {
-            type: Schema.Types.Mixed
+            type: Schema.Types.ObjectId,
+            ref: "File"
         }
     ], // Assuming File schema is embedded here
     folders: [

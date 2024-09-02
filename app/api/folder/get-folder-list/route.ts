@@ -1,5 +1,6 @@
 import Folder from '@/models/folder.modal';
 import dbConnect from '@/lib/dbConnect';
+import File from '@/models/file.modal';
 
 export async function POST(req: Request, res: Response) {
     await dbConnect();
@@ -7,21 +8,19 @@ export async function POST(req: Request, res: Response) {
     const { parentFolderId } = await req.json();
 
     try {
-        // TODO: also fetch file
-        // const parentFolder = await Folder.findById(parentFolderId).populate('folders').exec()
-
         const folders = await Folder.find({ parentFolderId: parentFolderId || null })
-
-        if (!folders) {
+        const files = await File.find({ folderId: parentFolderId || null })
+        if (!folders && !files) {
             return new Response(JSON.stringify(
-                { message: "No Folder Found" }
+                { message: "No Files/Folder Found" }
             ), { status: 400 });
         }
 
         return new Response(JSON.stringify(
             {
                 message: "Folder fetched successfully",
-                folders: folders
+                folders: folders,
+                files: files
             },
         ), { status: 201 }
         )
