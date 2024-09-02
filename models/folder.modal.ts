@@ -1,6 +1,8 @@
 import mongoose, { Document, models, Schema } from 'mongoose';
 import File, { IFile } from './file.modal'; // Import File schema
 
+
+
 // Define the interface for the Folder document
 export interface IFolder extends Document {
     userId: mongoose.Schema.Types.ObjectId;

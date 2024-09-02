@@ -54,7 +54,6 @@ const CreateFolderModal = () => {
         setOpen(false);
         const folderId = response.data?.folder._id || '/'
         router.push(`/${folderId}`)
-        // router.replace(`/${folderId}`)
       }
     } catch (error) {
       console.log("Response Error : Error Creating a Folder ");

@@ -91,7 +91,7 @@ function UploadFileModal({ currentFolderId }:
             <DialogTrigger asChild>
                 <button className='upload-file-modal-btn w-full'>
                     Upload File 
-                    <span className='ml-1 text-neutral-500'>{currentFolderId === null ? "null" : currentFolderId} {typeof(currentFolderId!)}</span>
+                    {/* <span className='ml-1 text-neutral-500'>{currentFolderId === null ? "null" : currentFolderId} {typeof(currentFolderId!)}</span> */}
                 </button>
             </DialogTrigger>
             <DialogContent className='border bg-dark-400 px-8 py-12'>
