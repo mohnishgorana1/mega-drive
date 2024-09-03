@@ -6,12 +6,13 @@ export interface IFile extends Document {
     type: string;
     createdAt: Date;
     updatedAt: Date;
-    folderId:  mongoose.Schema.Types.ObjectId | null;
+    folderId: mongoose.Schema.Types.ObjectId | null;
     isFileAtHome: boolean;
     userId: mongoose.Schema.Types.ObjectId;
     databaseLocations: {
         public_id: string;
         secure_url: string;
+        download_url: string
     };
 }
 
@@ -53,6 +54,10 @@ const fileSchema = new Schema<IFile>({
             required: true
         },
         secure_url: {
+            type: String,
+            required: true
+        },
+        download_url: {
             type: String,
             required: true
         }

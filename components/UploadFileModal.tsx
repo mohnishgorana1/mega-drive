@@ -16,6 +16,9 @@ import { Button } from './ui/button'
 import { useUser } from '@clerk/nextjs'
 import axios from 'axios'
 import Image from 'next/image'
+import { Viewer } from '@react-pdf-viewer/core';
+import '@react-pdf-viewer/core/lib/styles/index.css';
+import { Worker } from '@react-pdf-viewer/core';
 
 function UploadFileModal({ currentFolderId }:
     {
@@ -85,12 +88,11 @@ function UploadFileModal({ currentFolderId }:
     }
 
 
-
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 <button className='upload-file-modal-btn w-full'>
-                    Upload File 
+                    Upload File
                     {/* <span className='ml-1 text-neutral-500'>{currentFolderId === null ? "null" : currentFolderId} {typeof(currentFolderId!)}</span> */}
                 </button>
             </DialogTrigger>
@@ -128,8 +130,8 @@ function UploadFileModal({ currentFolderId }:
                             </pre>
                         )}
                         {!fileType.startsWith('image/') && !fileType.startsWith('video/') && !fileType.startsWith('text/') && (
-                            <div className="file-icon">
-                                <span>File Preview Not Available</span>
+                            <div className="pdf-preview">
+
                             </div>
                         )}
                     </DialogDescription>

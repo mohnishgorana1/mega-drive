@@ -4,7 +4,7 @@ import FileModal from "@/models/file.modal";
 import Folder from "@/models/folder.modal";
 import mongoose from "mongoose";
 
-
+let NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME = String(process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME)
 
 export async function POST(req: Request, res: Response) {
     await dbConnect();
@@ -33,7 +33,11 @@ export async function POST(req: Request, res: Response) {
     try {
         const data: any = await UploadFileToCloudinary(file, "megaDrive")
         console.log("data", data);
+        const { asset_id, public_id, secure_url } = data;
 
+        const downloadUrl = `https://res-console.cloudinary.com/${NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/media_explorer_thumbnails/${asset_id}/download`
+
+        console.log("DOWNLOAD URL ", downloadUrl);
 
         let newFile = await new FileModal({
             userId,
@@ -43,10 +47,21 @@ export async function POST(req: Request, res: Response) {
             isFileAtHome: isFileAtHome,
             databaseLocations: {
                 public_id: data?.public_id,
-                secure_url: data?.secure_url
+                secure_url: data?.secure_url,
+                download_url: downloadUrl
             },
         });
+        console.log("File before saving", newFile);
+
         await newFile.save();
+
+        // await FileModal.findOneAndUpdate(
+        //     { _id: newFile._id },
+        //     { $set: { 'databaseLocations.download_url': downloadUrl } },
+        //     { new: true }
+        // );
+        // const savedFile = await FileModal.findById(newFile._id);
+        // console.log("Saved File from DB:", savedFile);
 
         if (parentFolderId) {
             const currentFolder = await Folder.findById(parentFolderId);

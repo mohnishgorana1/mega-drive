@@ -53,7 +53,10 @@ const CreateFolderModal = () => {
       if (response.status === 201) {
         setOpen(false);
         const folderId = response.data?.folder._id || '/'
-        router.push(`/${folderId}`)
+        // router.push(`/${folderId}`)
+        setFolderName("Untitled Folder")
+        router.refresh()
+
       }
     } catch (error) {
       console.log("Response Error : Error Creating a Folder ");
