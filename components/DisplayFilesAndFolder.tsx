@@ -13,6 +13,7 @@ import { AiFillFile } from "react-icons/ai";
 import ViewImageDialog from './ViewImageDialog';
 import DownloadFileDialog from './DownloadFileDialog';
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger, } from "@/components/ui/context-menu"
+import RenameFileOrFolder from './RenameFileOrFolder';
 
 
 
@@ -35,6 +36,7 @@ function DisplayFilesAndFolder({ isGridView, currentFolderId }: DisplayFilesAndF
     const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
     const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
     const [isFileDialogOpen, setIsFileDialogOpen] = useState(false)
+    const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false)
 
     const [selectedVideoUrl, setSelectedVideoUrl] = useState('');
     const [selectedVideoDownloadUrl, setSelectedVideoDownloadUrl] = useState('');
@@ -45,6 +47,10 @@ function DisplayFilesAndFolder({ isGridView, currentFolderId }: DisplayFilesAndF
     const [selectedFileUrl, setSelectedFileUrl] = useState("")
     // const [selectedFileDownloadUrl, setSelectedFileDownloadUrl] = useState("")
 
+    // rename
+    const [selectedItemType, setSelectedItemType] = useState<"File" | "Folder" | "">("")
+    const [selectedItemId, setSelectedItemId] = useState("")
+    const [selectedItemCurrentName, setSelectedItemCurrentName] = useState("")
 
 
     const handleVideoClick = (url: string, downloadUrl: string) => {
@@ -68,6 +74,14 @@ function DisplayFilesAndFolder({ isGridView, currentFolderId }: DisplayFilesAndF
         setIsFileDialogOpen(true);
     };
 
+    const handleRenameClick = (itemId: string, itemType: "File" | "Folder", currentName: string) => {
+        console.log("Rename data ", itemId, itemType);
+
+        setSelectedItemId(itemId)
+        setSelectedItemType(itemType)
+        setSelectedItemCurrentName(currentName)
+        setIsRenameDialogOpen(true)
+    }
 
 
     const fetchFilesAndFolders = async () => {
@@ -140,9 +154,21 @@ function DisplayFilesAndFolder({ isGridView, currentFolderId }: DisplayFilesAndF
                             </Link>
                         </ContextMenuTrigger>
                         <ContextMenuContent className='bg-dark-200 py-2 flex flex-col w-[200px] gap-2'>
-                            <ContextMenuItem className='ml-2 hover:bg-dark-500 duration-300'>Open Folder</ContextMenuItem>
+                            {/* open */}
+                            <Link href={`/${folder?._id}`} >
+                                <ContextMenuItem className='ml-2 hover:bg-dark-500 duration-300'>Open Folder</ContextMenuItem>
+                            </Link>
+
+                            {/* rename */}
+                            <ContextMenuItem
+                                onClick={() => handleRenameClick(folder?._id, "Folder", folder?.folderName)}
+                                className='ml-2 hover:bg-dark-500 duration-300'
+                            >
+                                Rename Folder
+                            </ContextMenuItem>
+
+                            {/* delete */}
                             <ContextMenuItem className='ml-2 hover:bg-dark-500 duration-300'>Delete Folder</ContextMenuItem>
-                            <ContextMenuItem className='ml-2 hover:bg-dark-500 duration-300'>Rename Folder</ContextMenuItem>
                         </ContextMenuContent>
                     </ContextMenu>
                 </div>
@@ -177,7 +203,14 @@ function DisplayFilesAndFolder({ isGridView, currentFolderId }: DisplayFilesAndF
                                 <ContextMenuContent className='bg-dark-200 py-2 flex flex-col w-[200px] gap-2'>
                                     <ContextMenuItem className='ml-2 hover:bg-dark-500 duration-300'>Open File</ContextMenuItem>
                                     <ContextMenuItem className='ml-2 hover:bg-dark-500 duration-300'>Delete File</ContextMenuItem>
-                                    <ContextMenuItem className='ml-2 hover:bg-dark-500 duration-300'>Rename File</ContextMenuItem>
+
+                                    {/* rename */}
+                                    <ContextMenuItem
+                                        onClick={() => handleRenameClick(file?._id, "File", file?.fileName)}
+                                        className='ml-2 hover:bg-dark-500 duration-300'
+                                    >
+                                        Rename File
+                                    </ContextMenuItem>
                                 </ContextMenuContent>
                             </ContextMenu>
                         );
@@ -198,7 +231,13 @@ function DisplayFilesAndFolder({ isGridView, currentFolderId }: DisplayFilesAndF
                                 <ContextMenuContent className='bg-dark-200 py-2 flex flex-col w-[200px] gap-2'>
                                     <ContextMenuItem className='ml-2 hover:bg-dark-500 duration-300'>Open File</ContextMenuItem>
                                     <ContextMenuItem className='ml-2 hover:bg-dark-500 duration-300'>Delete File</ContextMenuItem>
-                                    <ContextMenuItem className='ml-2 hover:bg-dark-500 duration-300'>Rename File</ContextMenuItem>
+                                    {/* rename */}
+                                    <ContextMenuItem
+                                        onClick={() => handleRenameClick(file?._id, "File", file?.fileName)}
+                                        className='ml-2 hover:bg-dark-500 duration-300'
+                                    >
+                                        Rename File
+                                    </ContextMenuItem>
                                 </ContextMenuContent>
                             </ContextMenu>
                         )
@@ -219,7 +258,13 @@ function DisplayFilesAndFolder({ isGridView, currentFolderId }: DisplayFilesAndF
                                 <ContextMenuContent className='bg-dark-200 py-2 flex flex-col w-[200px] gap-2'>
                                     <ContextMenuItem className='ml-2 hover:bg-dark-500 duration-300'>Open File</ContextMenuItem>
                                     <ContextMenuItem className='ml-2 hover:bg-dark-500 duration-300'>Delete File</ContextMenuItem>
-                                    <ContextMenuItem className='ml-2 hover:bg-dark-500 duration-300'>Rename File</ContextMenuItem>
+                                    {/* rename */}
+                                    <ContextMenuItem
+                                        onClick={() => handleRenameClick(file?._id, "File", file?.fileName)}
+                                        className='ml-2 hover:bg-dark-500 duration-300'
+                                    >
+                                        Rename File
+                                    </ContextMenuItem>
                                 </ContextMenuContent>
                             </ContextMenu>
                         );
@@ -243,7 +288,13 @@ function DisplayFilesAndFolder({ isGridView, currentFolderId }: DisplayFilesAndF
                             <ContextMenuContent className='bg-dark-200 py-2 flex flex-col w-[200px] gap-2'>
                                 <ContextMenuItem className='ml-2 hover:bg-dark-500 duration-300'>Open File</ContextMenuItem>
                                 <ContextMenuItem className='ml-2 hover:bg-dark-500 duration-300'>Delete File</ContextMenuItem>
-                                <ContextMenuItem className='ml-2 hover:bg-dark-500 duration-300'>Rename File</ContextMenuItem>
+                                {/* rename */}
+                                <ContextMenuItem
+                                    onClick={() => handleRenameClick(file?._id, "File", file?.fileName)}
+                                    className='ml-2 hover:bg-dark-500 duration-300'
+                                >
+                                    Rename File
+                                </ContextMenuItem>
                             </ContextMenuContent>
                         </ContextMenu>
 
@@ -266,6 +317,13 @@ function DisplayFilesAndFolder({ isGridView, currentFolderId }: DisplayFilesAndF
                 isOpen={isFileDialogOpen}
                 fileUrl={selectedFileUrl}
                 onClose={() => setIsFileDialogOpen(false)}
+            />
+            <RenameFileOrFolder
+                isOpen={isRenameDialogOpen}
+                itemId={selectedItemId}
+                itemType={selectedItemType}
+                itemCurrentName={selectedItemCurrentName}
+                onClose={() => setIsRenameDialogOpen(false)}
             />
         </section >
     )
