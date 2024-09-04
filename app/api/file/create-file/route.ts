@@ -33,9 +33,16 @@ export async function POST(req: Request, res: Response) {
     try {
         const data: any = await UploadFileToCloudinary(file, "megaDrive")
         console.log("data", data);
+
         const { asset_id, public_id, secure_url } = data;
 
-        const downloadUrl = `https://res-console.cloudinary.com/${NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/media_explorer_thumbnails/${asset_id}/download`
+
+        let downloadUrl;
+        if (file.type == "text/plain" || file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+            downloadUrl = `https://res.cloudinary.com/${NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/raw/upload/${public_id}.${extension}`;
+        } else {
+            downloadUrl = `https://res-console.cloudinary.com/${NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/media_explorer_thumbnails/${asset_id}/download`
+        }
 
         console.log("DOWNLOAD URL ", downloadUrl);
 

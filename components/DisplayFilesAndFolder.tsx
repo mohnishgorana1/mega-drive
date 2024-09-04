@@ -6,17 +6,19 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react'
 import { RiFileVideoFill } from "react-icons/ri";
-import { FaFilePdf, FaFolderOpen } from "react-icons/fa6";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
-import { CldVideoPlayer } from 'next-cloudinary';
+import { FaFile, FaFilePdf } from "react-icons/fa6";
 import 'next-cloudinary/dist/cld-video-player.css';
 import ViewVideoDialog from './ViewVideoDialog';
+import { AiFillFile } from "react-icons/ai";
+import ViewImageDialog from './ViewImageDialog';
+import DownloadFileDialog from './DownloadFileDialog';
+
+
 
 interface DisplayFilesAndFolderProps {
     isGridView: boolean;
     currentFolderId: string | null;
 }
-
 
 
 function DisplayFilesAndFolder({ isGridView, currentFolderId }: DisplayFilesAndFolderProps) {
@@ -26,16 +28,46 @@ function DisplayFilesAndFolder({ isGridView, currentFolderId }: DisplayFilesAndF
     const [files, setFiles] = useState<[]>([])
 
     const [isLoading, setIsLoading] = useState(false)
-    const [Error, setError] = useState("")
+    const [error, setError] = useState<string | null>(null)
 
 
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
+    const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
+    const [isFileDialogOpen, setIsFileDialogOpen] = useState(false)
+
     const [selectedVideoUrl, setSelectedVideoUrl] = useState('');
+    const [selectedVideoDownloadUrl, setSelectedVideoDownloadUrl] = useState('');
 
-    const handleVideoClick = (url: string) => {
+    const [selectedImageUrl, setSelectedImageUrl] = useState('');
+    const [selectedImageDownloadUrl, setSelectedImageDownloadUrl] = useState('');
+
+    const [selectedFileUrl, setSelectedFileUrl] = useState("")
+    // const [selectedFileDownloadUrl, setSelectedFileDownloadUrl] = useState("")
+
+
+
+    const handleVideoClick = (url: string, downloadUrl: string) => {
+        console.log("Video URL", url);
+
         setSelectedVideoUrl(url);
-        setIsDialogOpen(true);
+        setSelectedVideoDownloadUrl(downloadUrl)
+        setIsVideoDialogOpen(true);
     };
+    const handleImageClick = (url: string, downloadUrl: string) => {
+        console.log("Image URL", url);
+
+        setSelectedImageUrl(url);
+        setSelectedImageDownloadUrl(downloadUrl)
+        setIsImageDialogOpen(true);
+    };
+    const handleFileClick = (url: string, downloadUrl: string) => {
+        console.log("File URL", url);
+
+        setSelectedFileUrl(url);
+        setIsFileDialogOpen(true);
+    };
+
+
 
     const fetchFilesAndFolders = async () => {
         setIsLoading(true)
@@ -60,6 +92,32 @@ function DisplayFilesAndFolder({ isGridView, currentFolderId }: DisplayFilesAndF
     useEffect(() => {
         fetchFilesAndFolders()
     }, [router])
+
+
+
+    if (error) {
+        return (
+            <section className='flex items-center justify-center w-full '>
+                <p className="text-red-700 text-2xl">{error}</p>
+                {/* <Image
+                    src={"/assets/gifs/error.gif"}
+                    width={100}
+                    height={100}
+                    alt='error gif'
+                /> */}
+            </section>
+        )
+    }
+
+
+
+    if (error) {
+        return (
+            <section className='flex items-center justify-center w-full mt-36'>
+                <Loader2 className="animate-spin text-purple-800 size-12" />
+            </section>
+        )
+    }
 
     return (
 
@@ -88,7 +146,10 @@ function DisplayFilesAndFolder({ isGridView, currentFolderId }: DisplayFilesAndF
 
                     if (fileType.startsWith("image/")) {
                         return (
-                            <div key={idx} className="hover:bg-dark-500 p-1 rounded-xl gap-2 flex flex-col items-center justify-between">
+                            <div
+                                key={idx}
+                                onClick={() => handleImageClick(file?.databaseLocations?.secure_url, file?.databaseLocations?.download_url)}
+                                className="hover:bg-dark-500 p-1 rounded-xl gap-2 flex flex-col items-center justify-between">
                                 <Image
                                     src={file?.databaseLocations.secure_url}
                                     height={100}
@@ -105,28 +166,25 @@ function DisplayFilesAndFolder({ isGridView, currentFolderId }: DisplayFilesAndF
                         return (
                             <div
                                 key={idx}
-                                onClick={() => handleVideoClick(file?.databaseLocations?.public_id)}
+                                onClick={() => handleVideoClick(file?.databaseLocations.public_id, file?.databaseLocations?.download_url)}
                                 className="hover:bg-dark-500 p-1 rounded-xl gap-2 flex flex-col items-center justify-between"
                             >
                                 <RiFileVideoFill className='w-20 h-20 text-blue-400' />
                                 <p className="text-sm truncate">{file?.fileName}</p>
-
                             </div>
                         )
                     }
                     if (fileType === "application/pdf") {
                         return (
-                            <a
+                            <div
                                 key={idx}
-                                href={file?.databaseLocations.download_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                download
+                                onClick={() => handleFileClick(file?.databaseLocations?.download_url)}
                                 className="hover:bg-dark-500 p-1 rounded-xl gap-2 flex flex-col items-center justify-between"
                             >
                                 <FaFilePdf className='w-20 h-20 text-red-500' />
                                 <p className="text-sm truncate">{file?.fileName}</p>
-                            </a>
+                            </div>
+
                         );
                     } else if (fileType.startsWith("text/")) {
                         iconSrc = "/assets/icons/text-icon.svg";
@@ -134,24 +192,33 @@ function DisplayFilesAndFolder({ isGridView, currentFolderId }: DisplayFilesAndF
                         iconSrc = "/assets/icons/word-icon.svg";
                     }
                     return (
-                        <div key={idx} className="hover:bg-dark-500 p-1 rounded-xl gap-2 flex flex-col items-center justify-between">
-                            <Image
-                                src={iconSrc}
-                                height={100}
-                                width={100}
-                                alt={file?.fileName}
-                                className="w-20 h-20"
-                            />
+                        <div
+                            key={idx}
+                            onClick={() => handleFileClick(file?.databaseLocations?.download_url)}
+                            className="hover:bg-dark-500 p-1 rounded-xl gap-2 flex flex-col items-center justify-between"
+                        >
+                            <FaFile className='w-20 h-20 text-dark-600' />
                             <p className="text-sm truncate">{file?.fileName}</p>
                         </div>
                     );
                 })
             }
-            {isLoading && <Loader2 className="animate-spin text-purple-800 col-span-full" />}
             <ViewVideoDialog
-                isOpen={isDialogOpen}
+                isOpen={isVideoDialogOpen}
                 videoUrl={selectedVideoUrl}
-                onClose={() => setIsDialogOpen(false)}
+                downloadUrl={selectedVideoDownloadUrl}
+                onClose={() => setIsVideoDialogOpen(false)}
+            />
+            <ViewImageDialog
+                isOpen={isImageDialogOpen}
+                imageUrl={selectedImageUrl}
+                downloadUrl={selectedImageDownloadUrl}
+                onClose={() => setIsImageDialogOpen(false)}
+            />
+            <DownloadFileDialog
+                isOpen={isFileDialogOpen}
+                fileUrl={selectedFileUrl}
+                onClose={() => setIsFileDialogOpen(false)}
             />
         </section >
 
