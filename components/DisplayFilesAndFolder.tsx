@@ -12,6 +12,7 @@ import ViewVideoDialog from './ViewVideoDialog';
 import { AiFillFile } from "react-icons/ai";
 import ViewImageDialog from './ViewImageDialog';
 import DownloadFileDialog from './DownloadFileDialog';
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger, } from "@/components/ui/context-menu"
 
 
 
@@ -60,7 +61,7 @@ function DisplayFilesAndFolder({ isGridView, currentFolderId }: DisplayFilesAndF
         setSelectedImageDownloadUrl(downloadUrl)
         setIsImageDialogOpen(true);
     };
-    const handleFileClick = (url: string, downloadUrl: string) => {
+    const handleFileClick = (url: string) => {
         console.log("File URL", url);
 
         setSelectedFileUrl(url);
@@ -110,7 +111,6 @@ function DisplayFilesAndFolder({ isGridView, currentFolderId }: DisplayFilesAndF
     }
 
 
-
     if (error) {
         return (
             <section className='flex items-center justify-center w-full mt-36'>
@@ -120,23 +120,34 @@ function DisplayFilesAndFolder({ isGridView, currentFolderId }: DisplayFilesAndF
     }
 
     return (
-
         <section className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-y-8 gap-x-6 text-center pt-4">
             {folders.length > 0 && folders.map((folder, idx) => (
-                <Link
-                    href={`/${folder._id}`}
-                    key={idx}
-                    className="hover:bg-dark-500 p-1 rounded-xl gap-2 flex flex-col items-center justify-between"
-                >
-                    <Image
-                        src={"/assets/icons/folder.svg"}
-                        height={100}
-                        width={100}
-                        alt={folder?.folderName}
-                        className="w-20 h-20"
-                    />
-                    <p className="text-sm truncate">{folder?.folderName}</p>
-                </Link>
+                <div key={idx} className='rounded-lg'>
+                    <ContextMenu key={idx}>
+                        <ContextMenuTrigger>
+                            <Link
+                                href={`/${folder?._id!}`}
+                                className="hover:bg-dark-500 p-1 rounded-xl gap-2 flex flex-col items-center justify-between"
+                            >
+                                <Image
+                                    src={"/assets/icons/folder.svg"}
+                                    height={100}
+                                    width={100}
+                                    alt={folder?.folderName}
+                                    className="w-20 h-20"
+                                />
+                                <p className="text-sm truncate">{folder?.folderName}</p>
+                            </Link>
+                        </ContextMenuTrigger>
+                        <ContextMenuContent className='bg-dark-200 py-2 flex flex-col w-[200px] gap-2'>
+                            <ContextMenuItem className='ml-2 hover:bg-dark-500 duration-300'>Open Folder</ContextMenuItem>
+                            <ContextMenuItem className='ml-2 hover:bg-dark-500 duration-300'>Delete Folder</ContextMenuItem>
+                            <ContextMenuItem className='ml-2 hover:bg-dark-500 duration-300'>Rename Folder</ContextMenuItem>
+                        </ContextMenuContent>
+                    </ContextMenu>
+                </div>
+
+
             ))}
 
             {
@@ -146,45 +157,71 @@ function DisplayFilesAndFolder({ isGridView, currentFolderId }: DisplayFilesAndF
 
                     if (fileType.startsWith("image/")) {
                         return (
-                            <div
-                                key={idx}
-                                onClick={() => handleImageClick(file?.databaseLocations?.secure_url, file?.databaseLocations?.download_url)}
-                                className="hover:bg-dark-500 p-1 rounded-xl gap-2 flex flex-col items-center justify-between">
-                                <Image
-                                    src={file?.databaseLocations.secure_url}
-                                    height={100}
-                                    width={150}
-                                    alt="file/image"
-                                    quality={80}
-                                    className="w-20 h-20 border rounded-xl"
-                                />
-                                <p className="text-sm truncate">{file?.fileName}</p>
-                            </div>
+                            <ContextMenu key={idx}>
+                                <ContextMenuTrigger>
+                                    <div
+                                        key={idx}
+                                        onClick={() => handleImageClick(file?.databaseLocations?.secure_url, file?.databaseLocations?.download_url)}
+                                        className="hover:bg-dark-500 p-1 rounded-xl gap-2 flex flex-col items-center justify-between">
+                                        <Image
+                                            src={file?.databaseLocations.secure_url}
+                                            height={100}
+                                            width={150}
+                                            alt="file/image"
+                                            quality={80}
+                                            className="w-20 h-20 border rounded-xl"
+                                        />
+                                        <p className="text-sm truncate">{file?.fileName}</p>
+                                    </div>
+                                </ContextMenuTrigger>
+                                <ContextMenuContent className='bg-dark-200 py-2 flex flex-col w-[200px] gap-2'>
+                                    <ContextMenuItem className='ml-2 hover:bg-dark-500 duration-300'>Open File</ContextMenuItem>
+                                    <ContextMenuItem className='ml-2 hover:bg-dark-500 duration-300'>Delete File</ContextMenuItem>
+                                    <ContextMenuItem className='ml-2 hover:bg-dark-500 duration-300'>Rename File</ContextMenuItem>
+                                </ContextMenuContent>
+                            </ContextMenu>
                         );
                     }
                     if (fileType.startsWith("video/")) {
                         return (
-                            <div
-                                key={idx}
-                                onClick={() => handleVideoClick(file?.databaseLocations.public_id, file?.databaseLocations?.download_url)}
-                                className="hover:bg-dark-500 p-1 rounded-xl gap-2 flex flex-col items-center justify-between"
-                            >
-                                <RiFileVideoFill className='w-20 h-20 text-blue-400' />
-                                <p className="text-sm truncate">{file?.fileName}</p>
-                            </div>
+                            <ContextMenu key={idx}>
+                                <ContextMenuTrigger>
+                                    <div
+                                        key={idx}
+                                        onClick={() => handleVideoClick(file?.databaseLocations.public_id, file?.databaseLocations?.download_url)}
+                                        className="hover:bg-dark-500 p-1 rounded-xl gap-2 flex flex-col items-center justify-between"
+                                    >
+                                        <RiFileVideoFill className='w-20 h-20 text-blue-400' />
+                                        <p className="text-sm truncate">{file?.fileName}</p>
+                                    </div>
+                                </ContextMenuTrigger>
+                                <ContextMenuContent className='bg-dark-200 py-2 flex flex-col w-[200px] gap-2'>
+                                    <ContextMenuItem className='ml-2 hover:bg-dark-500 duration-300'>Open File</ContextMenuItem>
+                                    <ContextMenuItem className='ml-2 hover:bg-dark-500 duration-300'>Delete File</ContextMenuItem>
+                                    <ContextMenuItem className='ml-2 hover:bg-dark-500 duration-300'>Rename File</ContextMenuItem>
+                                </ContextMenuContent>
+                            </ContextMenu>
                         )
                     }
                     if (fileType === "application/pdf") {
                         return (
-                            <div
-                                key={idx}
-                                onClick={() => handleFileClick(file?.databaseLocations?.download_url)}
-                                className="hover:bg-dark-500 p-1 rounded-xl gap-2 flex flex-col items-center justify-between"
-                            >
-                                <FaFilePdf className='w-20 h-20 text-red-500' />
-                                <p className="text-sm truncate">{file?.fileName}</p>
-                            </div>
-
+                            <ContextMenu key={idx}>
+                                <ContextMenuTrigger>
+                                    <div
+                                        key={idx}
+                                        onClick={() => handleFileClick(file?.databaseLocations?.download_url)}
+                                        className="hover:bg-dark-500 p-1 rounded-xl gap-2 flex flex-col items-center justify-between"
+                                    >
+                                        <FaFilePdf className='w-20 h-20 text-red-500' />
+                                        <p className="text-sm truncate">{file?.fileName}</p>
+                                    </div>
+                                </ContextMenuTrigger>
+                                <ContextMenuContent className='bg-dark-200 py-2 flex flex-col w-[200px] gap-2'>
+                                    <ContextMenuItem className='ml-2 hover:bg-dark-500 duration-300'>Open File</ContextMenuItem>
+                                    <ContextMenuItem className='ml-2 hover:bg-dark-500 duration-300'>Delete File</ContextMenuItem>
+                                    <ContextMenuItem className='ml-2 hover:bg-dark-500 duration-300'>Rename File</ContextMenuItem>
+                                </ContextMenuContent>
+                            </ContextMenu>
                         );
                     } else if (fileType.startsWith("text/")) {
                         iconSrc = "/assets/icons/text-icon.svg";
@@ -192,14 +229,24 @@ function DisplayFilesAndFolder({ isGridView, currentFolderId }: DisplayFilesAndF
                         iconSrc = "/assets/icons/word-icon.svg";
                     }
                     return (
-                        <div
-                            key={idx}
-                            onClick={() => handleFileClick(file?.databaseLocations?.download_url)}
-                            className="hover:bg-dark-500 p-1 rounded-xl gap-2 flex flex-col items-center justify-between"
-                        >
-                            <FaFile className='w-20 h-20 text-dark-600' />
-                            <p className="text-sm truncate">{file?.fileName}</p>
-                        </div>
+                        <ContextMenu key={idx}>
+                            <ContextMenuTrigger>
+                                <div
+                                    key={idx}
+                                    onClick={() => handleFileClick(file?.databaseLocations?.download_url)}
+                                    className="hover:bg-dark-500 p-1 rounded-xl gap-2 flex flex-col items-center justify-between"
+                                >
+                                    <FaFile className='w-20 h-20 text-dark-600' />
+                                    <p className="text-sm truncate">{file?.fileName}</p>
+                                </div>
+                            </ContextMenuTrigger>
+                            <ContextMenuContent className='bg-dark-200 py-2 flex flex-col w-[200px] gap-2'>
+                                <ContextMenuItem className='ml-2 hover:bg-dark-500 duration-300'>Open File</ContextMenuItem>
+                                <ContextMenuItem className='ml-2 hover:bg-dark-500 duration-300'>Delete File</ContextMenuItem>
+                                <ContextMenuItem className='ml-2 hover:bg-dark-500 duration-300'>Rename File</ContextMenuItem>
+                            </ContextMenuContent>
+                        </ContextMenu>
+
                     );
                 })
             }
@@ -221,7 +268,6 @@ function DisplayFilesAndFolder({ isGridView, currentFolderId }: DisplayFilesAndF
                 onClose={() => setIsFileDialogOpen(false)}
             />
         </section >
-
     )
 }
 

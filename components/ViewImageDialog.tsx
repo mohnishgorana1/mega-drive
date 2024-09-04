@@ -45,7 +45,7 @@ const ViewImageDialog = ({ isOpen, imageUrl, downloadUrl, onClose }: ViewImageDi
                                     >
                                         {/* <p className="text-sm truncate">{file?.fileName}</p> */}
                                         <Button className='bg-blue-700 hover:bg-transparent hover:border-blue-700 hover:text-blue-700 border border-transparent w-64  text-white flex gap-2 items-center text-lg duration-300 ease-linear rounded-xl'>
-                                            Download
+                                            Download Image
                                             <IoMdCloudDownload className='text-2xl' />
                                         </Button>
                                     </a>

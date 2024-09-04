@@ -22,8 +22,8 @@ const DownloadFileDialog = ({ isOpen, fileUrl, onClose }: DownloadFileDialogProp
             <Dialog open={isOpen} onOpenChange={onClose}>
                 <DialogContent className="bg-dark-400 p-4 w-[96vw]">
                     <DialogHeader className='flex items-center justify-center gap-1'>
-                        <DialogTitle className="text-xl font-semibold">File Preview Not Available</DialogTitle>
-                        <p className='text-dark-600 text-sm mt-4'>Please download file</p>
+                        <DialogTitle className="text-xl font-bold sm:text-2xl ">File&nbsp; Preview&nbsp; Not&nbsp; Available</DialogTitle>
+                        <p className='text-dark-600 text-sm mt-4'>Please Download File</p>
                         <DialogClose />
                     </DialogHeader>
                     {
