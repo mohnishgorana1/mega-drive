@@ -14,6 +14,7 @@ import ViewImageDialog from './ViewImageDialog';
 import DownloadFileDialog from './DownloadFileDialog';
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger, } from "@/components/ui/context-menu"
 import RenameFileOrFolder from './RenameFileOrFolder';
+import DeleteFileOrFolder from './DeleteFileOrFolder';
 
 
 
@@ -37,13 +38,18 @@ function DisplayFilesAndFolder({ isGridView, currentFolderId }: DisplayFilesAndF
     const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
     const [isFileDialogOpen, setIsFileDialogOpen] = useState(false)
     const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false)
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
+
+    // video 
     const [selectedVideoUrl, setSelectedVideoUrl] = useState('');
     const [selectedVideoDownloadUrl, setSelectedVideoDownloadUrl] = useState('');
 
+    // image
     const [selectedImageUrl, setSelectedImageUrl] = useState('');
     const [selectedImageDownloadUrl, setSelectedImageDownloadUrl] = useState('');
 
+    // file
     const [selectedFileUrl, setSelectedFileUrl] = useState("")
     // const [selectedFileDownloadUrl, setSelectedFileDownloadUrl] = useState("")
 
@@ -51,6 +57,11 @@ function DisplayFilesAndFolder({ isGridView, currentFolderId }: DisplayFilesAndF
     const [selectedItemType, setSelectedItemType] = useState<"File" | "Folder" | "">("")
     const [selectedItemId, setSelectedItemId] = useState("")
     const [selectedItemCurrentName, setSelectedItemCurrentName] = useState("")
+
+    //delete
+    const [deleteItemType, setDeleteItemType] = useState<"File" | "Folder" | "">("")
+    const [deleteItemId, setDeleteItemId] = useState("")
+    const [deleteItemName, setDeleteItemName] = useState("")
 
 
     const handleVideoClick = (url: string, downloadUrl: string) => {
@@ -81,6 +92,15 @@ function DisplayFilesAndFolder({ isGridView, currentFolderId }: DisplayFilesAndF
         setSelectedItemType(itemType)
         setSelectedItemCurrentName(currentName)
         setIsRenameDialogOpen(true)
+    }
+
+    const handleDelete = (itemId: string, itemType: "File" | "Folder", itemName: string) => {
+        console.log("Rename data ", itemId, itemType);
+
+        setDeleteItemId(itemId)
+        setDeleteItemType(itemType)
+        setDeleteItemName(itemName)
+        setIsDeleteDialogOpen(true)
     }
 
 
@@ -125,7 +145,7 @@ function DisplayFilesAndFolder({ isGridView, currentFolderId }: DisplayFilesAndF
     }
 
 
-    if (error) {
+    if (isLoading) {
         return (
             <section className='flex items-center justify-center w-full mt-36'>
                 <Loader2 className="animate-spin text-purple-800 size-12" />
@@ -168,7 +188,12 @@ function DisplayFilesAndFolder({ isGridView, currentFolderId }: DisplayFilesAndF
                             </ContextMenuItem>
 
                             {/* delete */}
-                            <ContextMenuItem className='ml-2 hover:bg-dark-500 duration-300'>Delete Folder</ContextMenuItem>
+                            <ContextMenuItem
+                                onClick={() => handleDelete(folder?._id, "Folder", folder?.folderName)}
+                                className='ml-2 hover:bg-dark-500 duration-300'
+                            >
+                                Delete Folder
+                            </ContextMenuItem>
                         </ContextMenuContent>
                     </ContextMenu>
                 </div>
@@ -201,8 +226,17 @@ function DisplayFilesAndFolder({ isGridView, currentFolderId }: DisplayFilesAndF
                                     </div>
                                 </ContextMenuTrigger>
                                 <ContextMenuContent className='bg-dark-200 py-2 flex flex-col w-[200px] gap-2'>
-                                    <ContextMenuItem className='ml-2 hover:bg-dark-500 duration-300'>Open File</ContextMenuItem>
-                                    <ContextMenuItem className='ml-2 hover:bg-dark-500 duration-300'>Delete File</ContextMenuItem>
+                                    <ContextMenuItem
+                                        onClick={() => handleImageClick(file?.databaseLocations?.secure_url, file?.databaseLocations?.download_url)}
+                                        className='ml-2 hover:bg-dark-500 duration-300'>
+                                        Open File
+                                    </ContextMenuItem>
+                                    <ContextMenuItem
+                                        onClick={() => handleDelete(file?._id, "File", file?.fileName)}
+                                        className='ml-2 hover:bg-dark-500 duration-300'
+                                    >
+                                        Delete File
+                                    </ContextMenuItem>
 
                                     {/* rename */}
                                     <ContextMenuItem
@@ -229,8 +263,17 @@ function DisplayFilesAndFolder({ isGridView, currentFolderId }: DisplayFilesAndF
                                     </div>
                                 </ContextMenuTrigger>
                                 <ContextMenuContent className='bg-dark-200 py-2 flex flex-col w-[200px] gap-2'>
-                                    <ContextMenuItem className='ml-2 hover:bg-dark-500 duration-300'>Open File</ContextMenuItem>
-                                    <ContextMenuItem className='ml-2 hover:bg-dark-500 duration-300'>Delete File</ContextMenuItem>
+                                    <ContextMenuItem
+                                        onClick={() => handleVideoClick(file?.databaseLocations.public_id, file?.databaseLocations?.download_url)}
+                                        className='ml-2 hover:bg-dark-500 duration-300'
+                                    >Open File
+                                    </ContextMenuItem>
+                                    <ContextMenuItem
+                                        onClick={() => handleDelete(file?._id, "File", file?.fileName)}
+                                        className='ml-2 hover:bg-dark-500 duration-300'
+                                    >
+                                        Delete File
+                                    </ContextMenuItem>
                                     {/* rename */}
                                     <ContextMenuItem
                                         onClick={() => handleRenameClick(file?._id, "File", file?.fileName)}
@@ -256,8 +299,15 @@ function DisplayFilesAndFolder({ isGridView, currentFolderId }: DisplayFilesAndF
                                     </div>
                                 </ContextMenuTrigger>
                                 <ContextMenuContent className='bg-dark-200 py-2 flex flex-col w-[200px] gap-2'>
-                                    <ContextMenuItem className='ml-2 hover:bg-dark-500 duration-300'>Open File</ContextMenuItem>
-                                    <ContextMenuItem className='ml-2 hover:bg-dark-500 duration-300'>Delete File</ContextMenuItem>
+                                    <ContextMenuItem
+                                        onClick={() => handleFileClick(file?.databaseLocations?.download_url)}
+                                        className='ml-2 hover:bg-dark-500 duration-300'>Open File</ContextMenuItem>
+                                    <ContextMenuItem
+                                        onClick={() => handleDelete(file?._id, "File", file?.fileName)}
+                                        className='ml-2 hover:bg-dark-500 duration-300'
+                                    >
+                                        Delete File
+                                    </ContextMenuItem>
                                     {/* rename */}
                                     <ContextMenuItem
                                         onClick={() => handleRenameClick(file?._id, "File", file?.fileName)}
@@ -286,8 +336,16 @@ function DisplayFilesAndFolder({ isGridView, currentFolderId }: DisplayFilesAndF
                                 </div>
                             </ContextMenuTrigger>
                             <ContextMenuContent className='bg-dark-200 py-2 flex flex-col w-[200px] gap-2'>
-                                <ContextMenuItem className='ml-2 hover:bg-dark-500 duration-300'>Open File</ContextMenuItem>
-                                <ContextMenuItem className='ml-2 hover:bg-dark-500 duration-300'>Delete File</ContextMenuItem>
+                                <ContextMenuItem
+                                    onClick={() => handleFileClick(file?.databaseLocations?.download_url)}
+                                    className='ml-2 hover:bg-dark-500 duration-300'
+                                >Open File</ContextMenuItem>
+                                <ContextMenuItem
+                                    onClick={() => handleDelete(file?._id, "File", file?.fileName)}
+                                    className='ml-2 hover:bg-dark-500 duration-300'
+                                >
+                                    Delete File
+                                </ContextMenuItem>
                                 {/* rename */}
                                 <ContextMenuItem
                                     onClick={() => handleRenameClick(file?._id, "File", file?.fileName)}
@@ -324,6 +382,13 @@ function DisplayFilesAndFolder({ isGridView, currentFolderId }: DisplayFilesAndF
                 itemType={selectedItemType}
                 itemCurrentName={selectedItemCurrentName}
                 onClose={() => setIsRenameDialogOpen(false)}
+            />
+            <DeleteFileOrFolder
+                isOpen={isDeleteDialogOpen}
+                itemId={deleteItemId}
+                itemType={deleteItemType}
+                itemName={deleteItemName}
+                onClose={() => setIsDeleteDialogOpen(false)}
             />
         </section >
     )

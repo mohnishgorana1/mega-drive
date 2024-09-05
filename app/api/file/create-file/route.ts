@@ -52,6 +52,7 @@ export async function POST(req: Request, res: Response) {
             type: file.type,
             folderId: parentFolderId,
             isFileAtHome: isFileAtHome,
+            fileSize: file.size,
             databaseLocations: {
                 public_id: data?.public_id,
                 secure_url: data?.secure_url,
@@ -62,18 +63,11 @@ export async function POST(req: Request, res: Response) {
 
         await newFile.save();
 
-        // await FileModal.findOneAndUpdate(
-        //     { _id: newFile._id },
-        //     { $set: { 'databaseLocations.download_url': downloadUrl } },
-        //     { new: true }
-        // );
-        // const savedFile = await FileModal.findById(newFile._id);
-        // console.log("Saved File from DB:", savedFile);
-
         if (parentFolderId) {
             const currentFolder = await Folder.findById(parentFolderId);
             if (currentFolder) {
                 currentFolder.files.push(newFile);
+                currentFolder.folderSize += file.size
                 await currentFolder.save();
                 console.log("File added to Folder:", currentFolder.name);
             }

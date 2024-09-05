@@ -18,8 +18,6 @@ export default function Home() {
   const [isGridView, setIsGridView] = useState(true)
   const router = useRouter();
 
-
-
   return (
     <main className="flex flex-col w-full gap-3">
 

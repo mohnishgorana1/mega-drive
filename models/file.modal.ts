@@ -9,6 +9,7 @@ export interface IFile extends Document {
     folderId: mongoose.Schema.Types.ObjectId | null;
     isFileAtHome: boolean;
     userId: mongoose.Schema.Types.ObjectId;
+    fileSize: number;
     databaseLocations: {
         public_id: string;
         secure_url: string;
@@ -34,6 +35,10 @@ const fileSchema = new Schema<IFile>({
     isFileAtHome: {
         type: Boolean,
         default: true,
+    },
+    fileSize: {
+        type: Number,
+        default: 0
     },
     userId: {
         type: Schema.Types.ObjectId,
@@ -62,8 +67,7 @@ const fileSchema = new Schema<IFile>({
             required: true
         }
 
-    },
-
+    }
 });
 
 // Create the File model

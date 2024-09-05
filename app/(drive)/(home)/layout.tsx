@@ -33,7 +33,7 @@ function HomeLayout({ children }: { children: ReactNode }) {
                 <Header />
             </header>
             <div className='flex '>
-                <Sidebar />
+                {/* <Sidebar /> */}
                 <section className="flex min-h-screen flex-1 flex-col px-4 sm:px-6 pb-6 pt-12 sm:pt-5  max-md:pb-14 ">
                     <div className="w-full">
                         <header className="flex w-full justify-between items-center">

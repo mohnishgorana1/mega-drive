@@ -19,6 +19,7 @@ export async function POST(req: Request, res: Response) {
         const newFolder = new Folder({
             folderName,
             userId,
+            folderSize: 0,
             parentFolderId: parentFolderId || null, // Set to null if no parentFolderId is provided
         });
 

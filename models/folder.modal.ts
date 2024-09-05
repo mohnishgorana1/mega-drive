@@ -7,6 +7,7 @@ import File, { IFile } from './file.modal'; // Import File schema
 export interface IFolder extends Document {
     userId: mongoose.Schema.Types.ObjectId;
     folderName: string;
+    folderSize: number;
     parentFolderId: mongoose.Schema.Types.ObjectId | null;
     createdAt: Date;
     updatedAt: Date;
@@ -36,6 +37,10 @@ const folderSchema = new Schema<IFolder>({
     updatedAt: {
         type: Date,
         default: Date.now
+    },
+    folderSize: {
+        type: Number,
+        default: 0,
     },
     files: [
         {
