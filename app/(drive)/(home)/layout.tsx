@@ -16,8 +16,7 @@ function HomeLayout({ children }: { children: ReactNode }) {
     const [currentFolderId, setCurrentFolderId] = useState<string | null>(null)
 
     useEffect(() => {
-        // Check if the pathname is valid for folder creation (i.e., "/" or "/[folderId]")
-        // const isRootOrFolder = pathName === "/" || /^\/[a-zA-Z0-9]+$/.test(pathName)
+
         const isTrashOrFavourites = pathName === "/favourites" || pathName === "/trash"
         setIsValidLocationToCreateFolder(!isTrashOrFavourites);
         setIsValidLocationToUploadFile(!isTrashOrFavourites);
