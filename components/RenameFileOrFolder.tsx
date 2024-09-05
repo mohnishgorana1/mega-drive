@@ -84,7 +84,7 @@ function RenameFileOrFolder({ itemId, itemType, itemCurrentName, isOpen, onClose
                             type='text'
                             value={itemNewName}
                             onChange={(e) => setItemNewName(e.target.value)}
-                            placeholder={`Enter ${itemType} Name`}
+                            placeholder={itemCurrentName}
                             className='text-blue-500 rounded-xl font-extrabold bg-dark-300 outline outline-blue-700 outline-[1px] focus:ring-1 focus:ring-blue-700  focus:outline-0 focus:border-0'
                         />
                     </DialogDescription>
