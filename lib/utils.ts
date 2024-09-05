@@ -34,7 +34,7 @@ export function timeAgo(dateString: string): string {
 export function formatFileSize(bytes: number): string {
   // Ensure 'bytes' is a number
   const numBytes = Number(bytes);
-  
+
   if (isNaN(numBytes)) {
     throw new Error('Invalid input, bytes must be a number');
   }
@@ -52,3 +52,43 @@ export function formatFileSize(bytes: number): string {
   return `${size.toFixed(2)} ${units[unitIndex]}`;
 }
 
+
+
+// SORTING
+
+
+interface FileOrFolder {
+  createdAt: string;
+  fileSize: number;
+  folderName: string;
+}
+
+
+export function sortItems(items: FileOrFolder[], sortKey: SortKey, sortOrder: SortOrder = 'asc'): FileOrFolder[] {
+  return items.sort((a, b) => {
+    let aValue: any, bValue: any;
+
+    switch (sortKey) {
+      case 'createdAt':
+        aValue = new Date(a.createdAt).getTime();
+        bValue = new Date(b.createdAt).getTime();
+        break;
+      case 'fileSize':
+        aValue = a.fileSize;
+        bValue = b.fileSize;
+        break;
+      case 'folderName':
+        aValue = a.folderName.toLowerCase();
+        bValue = b.folderName.toLowerCase();
+        break;
+      default:
+        return 0;
+    }
+
+    if (sortOrder === 'asc') {
+      return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
+    } else {
+      return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
+    }
+  });
+}

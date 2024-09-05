@@ -17,7 +17,7 @@ import RenameFileOrFolder from './RenameFileOrFolder';
 import DeleteFileOrFolder from './DeleteFileOrFolder';
 import BreadCrumb from './BreadCrumb';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select"
-import { formatFileSize, timeAgo } from '@/lib/utils';
+import { formatFileSize, sortItems, timeAgo } from '@/lib/utils';
 
 
 interface DisplayFilesAndFolderProps {
@@ -64,6 +64,19 @@ function DisplayFilesAndFolder({ currentFolderId }: DisplayFilesAndFolderProps) 
     const [deleteItemType, setDeleteItemType] = useState<"File" | "Folder" | "">("")
     const [deleteItemId, setDeleteItemId] = useState("")
     const [deleteItemName, setDeleteItemName] = useState("")
+
+    // sorting states
+    const [sortKey, setSortKey] = useState<SortKey>('createdAt');
+    const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
+
+    const handleSort = (key: SortKey) => {
+        if (sortKey === key) {
+            setSortOrder(prevOrder => (prevOrder === 'asc' ? 'desc' : 'asc'));
+        } else {
+            setSortKey(key);
+            setSortOrder('asc'); // Default to ascending order on first click
+        }
+    };
 
 
     const handleVideoClick = (url: string, downloadUrl: string) => {
@@ -114,9 +127,12 @@ function DisplayFilesAndFolder({ currentFolderId }: DisplayFilesAndFolderProps) 
             })
 
             if (response?.status === 201) {
+                const sortedFolders = sortItems(response.data?.folders, sortKey, sortOrder);
+                const sortedFiles = sortItems(response?.data?.files, sortKey, sortOrder);
+
                 console.log(response);
-                setFolders(response.data?.folders)
-                setFiles(response?.data?.files)
+                setFolders(sortedFolders);
+                setFiles(sortedFiles);
             }
         } catch (error: any) {
             console.log("Error Fetching Folders and Files", error);
@@ -159,8 +175,8 @@ function DisplayFilesAndFolder({ currentFolderId }: DisplayFilesAndFolderProps) 
         <main className='flex flex-col'>
             {/* bread crumbs grid/list and sort */}
             <div className="w-full flex md:items-center gap-4 md:gap-0 flex-col md:flex-row">
-                <BreadCrumb currentFolderId={null} /> {/* Add the breadcrumb */}
-                <div className="text-center md:w-[30%] flex items-center justify-between gap-4">
+                <BreadCrumb currentFolderId={currentFolderId} /> {/* Add the breadcrumb */}
+                <div className="text-center md:w-[30%] flex items-center justify-between gap-3">
                     <div className="border rounded-xl flex">
                         <button
                             className={`px-5 rounded-xl ${isGridView && "bg-blue-700 "}`}
@@ -190,7 +206,7 @@ function DisplayFilesAndFolder({ currentFolderId }: DisplayFilesAndFolderProps) 
             {/* FILES AND FOLDER */}
             {
                 isGridView ? (
-                    <section className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-y-8 gap-x-6 text-center pt-4">
+                    <section className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-y-8 gap-x-6 text-center pt-4 sm:pt-8">
                         {folders.length > 0 && folders.map((folder, idx) => (
                             <div key={idx} className='rounded-lg'>
                                 <ContextMenu key={idx}>
@@ -394,21 +410,43 @@ function DisplayFilesAndFolder({ currentFolderId }: DisplayFilesAndFolderProps) 
                     </section>
                 ) : (
                     <section className="border w-full md:w-[80%] self-center flex flex-col gap-y-2 my-4">
-                        <nav className="grid grid-cols-12 bg-blue-950 text-center w-full h-8">
+                        {/* <nav className="grid grid-cols-12 bg-blue-950 text-center w-full h-8">
                             <div className='col-span-4 md:col-span-4 border-r hover:bg-black h-full text-sm truncate pt-1'>Items</div>
                             <p className="col-span-2 md:col-span-3 border-r text-sm hover:bg-black h-full pt-1">Size</p>
                             <p className='col-span-3 md:col-span-3 border-r text-sm hover:bg-black h-full pt-1'>Created At</p>
                             <p className='col-span-3 md:col-span-2 border-r text-sm hover:bg-black h-full pt-1'>Type</p>
+                        </nav> */}
+                        <nav className="grid grid-cols-12 bg-blue-950 text-center w-full h-8">
+                            <div
+                                onClick={() => handleSort('folderName')}
+                                className='col-span-4 md:col-span-4 border-r hover:bg-black h-full text-sm truncate pt-1 cursor-pointer'
+                            >
+                                Items {sortKey === 'folderName' && (sortOrder === 'asc' ? '▲' : '▼')}
+                            </div>
+                            <p
+                                onClick={() => handleSort('fileSize')}
+                                className="col-span-2 md:col-span-3 border-r text-sm hover:bg-black h-full pt-1 cursor-pointer"
+                            >
+                                Size {sortKey === 'fileSize' && (sortOrder === 'asc' ? '▲' : '▼')}
+                            </p>
+                            <p
+                                onClick={() => handleSort('createdAt')}
+                                className='col-span-3 md:col-span-3 border-r text-sm hover:bg-black h-full pt-1 cursor-pointer'
+                            >
+                                Created At {sortKey === 'createdAt' && (sortOrder === 'asc' ? '▲' : '▼')}
+                            </p>
+                            <p className='col-span-3 md:col-span-2 border-r text-sm hover:bg-black h-full pt-1'>Type</p>
                         </nav>
+
                         {folders.length > 0 && folders.map((folder, idx) => (
                             <div key={idx} className='rounded-lg'>
                                 <ContextMenu key={idx}>
                                     <ContextMenuTrigger>
                                         <Link
                                             href={`/${folder?._id!}`}
-                                            className="grid grid-cols-12 text-center items-center justify-center w-full py-2 hover:bg-dark-500 border-b border-dark-400"
+                                            className="grid grid-cols-12 text-center items-center justify-center w-full py-2 px-4 hover:bg-dark-400 border-b border-dark-400"
                                         >
-                                            <div className='flex items-center gap-x-2 col-span-4 md:col-span-4 '>
+                                            <div className='flex items-center gap-x-2 sm:gap-x-4 col-span-4 md:col-span-4 '>
                                                 <Image
                                                     src={"/assets/icons/folder.svg"}
                                                     height={25}
@@ -449,6 +487,8 @@ function DisplayFilesAndFolder({ currentFolderId }: DisplayFilesAndFolderProps) 
                             </div>
                         ))}
 
+
+
                         {files.length > 0 && files.map((file, idx) => {
                             const fileType = file.type;
                             let iconSrc = "/assets/icons/default-file.svg"; // default icon
@@ -460,9 +500,9 @@ function DisplayFilesAndFolder({ currentFolderId }: DisplayFilesAndFolderProps) 
                                             <div
                                                 key={idx}
                                                 onClick={() => handleImageClick(file?.databaseLocations?.secure_url, file?.databaseLocations?.download_url)}
-                                                className="grid grid-cols-12 text-center items-center justify-center w-full py-2 hover:bg-dark-500"
+                                                className="grid grid-cols-12 text-center items-center justify-center w-full py-2 px-4 hover:bg-dark-400"
                                             >
-                                                <div className='flex items-center gap-x-2 col-span-4 md:col-span-4 '>
+                                                <div className='flex items-center gap-x-2 sm:gap-x-4 col-span-4 md:col-span-4 '>
                                                     <Image
                                                         src={file?.databaseLocations.secure_url}
                                                         height={100}
@@ -509,9 +549,9 @@ function DisplayFilesAndFolder({ currentFolderId }: DisplayFilesAndFolderProps) 
                                             <div
                                                 key={idx}
                                                 onClick={() => handleVideoClick(file?.databaseLocations.public_id, file?.databaseLocations?.download_url)}
-                                                className="grid grid-cols-12 text-center items-center justify-center w-full py-2 hover:bg-dark-500"
+                                                className="grid grid-cols-12 text-center items-center justify-center w-full py-2 px-4 hover:bg-dark-400"
                                             >
-                                                <div className='flex items-center gap-x-2 col-span-4 md:col-span-4 '>
+                                                <div className='flex items-center gap-x-2 sm:gap-x-4 col-span-4 md:col-span-4 '>
                                                     <RiFileVideoFill className='w-8 h-8 text-blue-400' />
                                                     <p className="text-sm font-bold truncate">{file?.fileName}</p>
                                                 </div>
@@ -550,9 +590,9 @@ function DisplayFilesAndFolder({ currentFolderId }: DisplayFilesAndFolderProps) 
                                             <div
                                                 key={idx}
                                                 onClick={() => handleFileClick(file?.databaseLocations?.download_url)}
-                                                className="grid grid-cols-12 text-center items-center justify-center w-full py-2 hover:bg-dark-500"
+                                                className="grid grid-cols-12 text-center items-center justify-center w-full py-2 px-4 hover:bg-dark-400"
                                             >
-                                                <div className="flex items-center gap-x-2 col-span-4 md:col-span-4 ">
+                                                <div className="flex items-center gap-x-2 sm:gap-x-4 col-span-4 md:col-span-4 ">
                                                     <FaFilePdf className='w-8 h-8  text-red-500' />
                                                     <p className="text-sm font-bold truncate">{file?.fileName}</p>
                                                 </div>
@@ -561,7 +601,7 @@ function DisplayFilesAndFolder({ currentFolderId }: DisplayFilesAndFolderProps) 
                                                 <p className='col-span-3 md:col-span-2  text-sm '>pdf</p>
                                             </div>
                                         </ContextMenuTrigger>
-                                        <ContextMenuContent className='bg-dark-200 py-2 flex flex-col w-[200px] gap-2'>
+                                        <ContextMenuContent className='bg-dark-200 py-2 px-4 flex flex-col w-[200px] gap-2'>
                                             <ContextMenuItem
                                                 onClick={() => handleFileClick(file?.databaseLocations?.download_url)}
                                                 className='ml-2 hover:bg-dark-500 duration-300'>Open File</ContextMenuItem>
@@ -592,9 +632,9 @@ function DisplayFilesAndFolder({ currentFolderId }: DisplayFilesAndFolderProps) 
                                         <div
                                             key={idx}
                                             onClick={() => handleFileClick(file?.databaseLocations?.download_url)}
-                                            className="grid grid-cols-12 text-center items-center justify-center w-full py-2 hover:bg-dark-500"
+                                            className="grid grid-cols-12 text-center items-center justify-center w-full py-2 px-4 hover:bg-dark-400"
                                         >
-                                            <div className="flex items-center gap-x-2 col-span-4 md:col-span-4 ">
+                                            <div className="flex items-center gap-x-2 sm:gap-x-4 col-span-4 md:col-span-4 ">
                                                 <FaFile className='w-8 h-8 8 text-dark-600' />
                                                 <p className="text-sm font-bold truncate">{file?.fileName}</p>
                                             </div>
@@ -626,6 +666,7 @@ function DisplayFilesAndFolder({ currentFolderId }: DisplayFilesAndFolderProps) 
 
                             );
                         })}
+
                     </section>
                 )
             }
