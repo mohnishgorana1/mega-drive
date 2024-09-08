@@ -16,9 +16,7 @@ import { Button } from './ui/button'
 import { useUser } from '@clerk/nextjs'
 import axios from 'axios'
 import Image from 'next/image'
-import { Viewer } from '@react-pdf-viewer/core';
-import '@react-pdf-viewer/core/lib/styles/index.css';
-import { Worker } from '@react-pdf-viewer/core';
+
 
 function UploadFileModal({ currentFolderId }:
     {
