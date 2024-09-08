@@ -1,6 +1,3 @@
-import mongoose from 'mongoose';
-import User, { IUser } from '../../../models/user.modal'; // Path to your User model
-import dbConnect from '@/lib/dbConnect';
 import { clerkClient } from '@clerk/nextjs/server';
 import { WebhookEvent } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';

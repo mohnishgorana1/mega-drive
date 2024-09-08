@@ -14,7 +14,7 @@ export default clerkMiddleware((auth, req) => {
 
     const currentUrl = new URL(req.url)
 
-     const isAccessingDashboard = currentUrl.pathname === "/"
+    const isAccessingDashboard = currentUrl.pathname === "/"
      
     // logged in and your trying to access publicRoute 
     // but not accessingDashboard that means your accessing sign-in or sign-up so go to home page
