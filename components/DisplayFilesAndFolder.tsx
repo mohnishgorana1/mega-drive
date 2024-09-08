@@ -127,12 +127,17 @@ function DisplayFilesAndFolder({ currentFolderId }: DisplayFilesAndFolderProps) 
             })
 
             if (response?.status === 201) {
-                const sortedFolders = sortItems(response.data?.folders, sortKey, sortOrder);
-                const sortedFiles = sortItems(response?.data?.files, sortKey, sortOrder);
-
                 console.log(response);
-                setFolders(sortedFolders);
-                setFiles(sortedFiles);
+
+                // const sortedFolders = sortItems(response.data?.folders, sortKey, sortOrder);
+                // const sortedFiles = sortItems(response?.data?.files, sortKey, sortOrder);
+                // setFolders(sortedFolders);
+                // setFiles(sortedFiles);
+
+
+                setFolders(response.data?.folders);
+                setFiles(response?.data?.files);
+
             }
         } catch (error: any) {
             console.log("Error Fetching Folders and Files", error);
@@ -418,22 +423,25 @@ function DisplayFilesAndFolder({ currentFolderId }: DisplayFilesAndFolderProps) 
                         </nav> */}
                         <nav className="grid grid-cols-12 bg-blue-950 text-center w-full h-8">
                             <div
-                                onClick={() => handleSort('folderName')}
+                                // onClick={() => handleSort('folderName')}
                                 className='col-span-4 md:col-span-4 border-r hover:bg-black h-full text-sm truncate pt-1 cursor-pointer'
                             >
-                                Items {sortKey === 'folderName' && (sortOrder === 'asc' ? '▲' : '▼')}
+                                Items 
+                                {/* {sortKey === 'folderName' && (sortOrder === 'asc' ? '▲' : '▼')} */}
                             </div>
                             <p
-                                onClick={() => handleSort('fileSize')}
+                                // onClick={() => handleSort('fileSize')}
                                 className="col-span-2 md:col-span-3 border-r text-sm hover:bg-black h-full pt-1 cursor-pointer"
                             >
-                                Size {sortKey === 'fileSize' && (sortOrder === 'asc' ? '▲' : '▼')}
+                                Size 
+                                {/* {sortKey === 'fileSize' && (sortOrder === 'asc' ? '▲' : '▼')} */}
                             </p>
                             <p
-                                onClick={() => handleSort('createdAt')}
+                                // onClick={() => handleSort('createdAt')}
                                 className='col-span-3 md:col-span-3 border-r text-sm hover:bg-black h-full pt-1 cursor-pointer'
                             >
-                                Created At {sortKey === 'createdAt' && (sortOrder === 'asc' ? '▲' : '▼')}
+                                Created At 
+                                {/* {sortKey === 'createdAt' && (sortOrder === 'asc' ? '▲' : '▼')} */}
                             </p>
                             <p className='col-span-3 md:col-span-2 border-r text-sm hover:bg-black h-full pt-1'>Type</p>
                         </nav>

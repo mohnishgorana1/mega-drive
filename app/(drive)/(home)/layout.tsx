@@ -36,7 +36,7 @@ function HomeLayout({ children }: { children: ReactNode }) {
                 <section className="flex min-h-screen flex-1 flex-col px-4 sm:px-6 pb-6 pt-12 sm:pt-5  max-md:pb-14 ">
                     <div className="w-full">
                         <header className="flex w-full justify-between items-center">
-                            <div className="flex items-center justify-between pr-2 border-[1px] pl-4 border-[#ffffff37] rounded-xl sm:w-[30%] ">
+                            {/* <div className="flex items-center justify-between pr-2 border-[1px] pl-4 border-[#ffffff37] rounded-xl sm:w-[30%] ">
                                 <input
                                     type="text"
                                     value={searchKeyword}
@@ -45,8 +45,8 @@ function HomeLayout({ children }: { children: ReactNode }) {
                                     placeholder="Search File.."
                                 />
                                 <IoSearch className="text-2xl font-thin hover:scale-105 duration-300 cursor-pointer" />
-                            </div>
-                            <div className='sm:w-[40%] flex gap-x-4 gap-y-2 sm:items-center items-start flex-col sm:flex-row'>
+                            </div> */}
+                            <div className='w-full flex flex-row gap-x-16 sm:gap-x-[70vw] gap-y-2 sm:items-center items-end sm:flex-row'>
                                 {
                                     isValidLocationToCreateFolder && (
                                         <CreateFolderModal />
