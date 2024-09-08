@@ -5,16 +5,17 @@ import File from '@/models/file.modal';
 export async function POST(req: Request, res: Response) {
     await dbConnect();
 
-    const { currentFolderId, userMongoId } = await req.json();
-
+    const { currentFolderId, userId } = await req.json();
+    console.log("userMognoId", userId);
+    
     try {
         const folders = await Folder.find({
             parentFolderId: currentFolderId || null,
-            userId: userMongoId
+            userId: userId
         })
         const files = await File.find({
             folderId: currentFolderId || null,
-            userId: userMongoId
+            userId: userId
         })
 
 

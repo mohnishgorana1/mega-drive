@@ -26,7 +26,7 @@ interface DisplayFilesAndFolderProps {
 }
 function DisplayFilesAndFolder({ currentFolderId }: DisplayFilesAndFolderProps) {
 
-    const { user } = useUser();
+    const { user, isLoaded } = useUser();
     const userMongoId = user?.publicMetadata?.userMongoId
 
     const [isGridView, setIsGridView] = useState(true)
@@ -123,11 +123,14 @@ function DisplayFilesAndFolder({ currentFolderId }: DisplayFilesAndFolderProps) 
 
 
     const fetchFilesAndFolders = async () => {
+        console.log("user", user);
+        console.log("userMongoId", userMongoId);
+
         setIsLoading(true)
         try {
             const response = await axios.post("/api/folder/get-folder-list", {
                 currentFolderId: currentFolderId,
-                userMongoId: userMongoId
+                userId: userMongoId
             })
 
             if (response?.status === 201) {
@@ -152,8 +155,10 @@ function DisplayFilesAndFolder({ currentFolderId }: DisplayFilesAndFolderProps) 
     }
 
     useEffect(() => {
-        fetchFilesAndFolders()
-    }, [router])
+        if (isLoaded && userMongoId) {
+            fetchFilesAndFolders();
+        }
+    }, [isLoaded, userMongoId]); // Runs when isLoaded and userMongoId change
 
 
 
