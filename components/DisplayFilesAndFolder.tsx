@@ -18,14 +18,17 @@ import DeleteFileOrFolder from './DeleteFileOrFolder';
 import BreadCrumb from './BreadCrumb';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select"
 import { formatFileSize, sortItems, timeAgo } from '@/lib/utils';
+import { useUser } from '@clerk/nextjs';
 
 
 interface DisplayFilesAndFolderProps {
     currentFolderId: string | null;
 }
-
-
 function DisplayFilesAndFolder({ currentFolderId }: DisplayFilesAndFolderProps) {
+
+    const { user } = useUser();
+    const userMongoId = user?.publicMetadata?.userMongoId
+
     const [isGridView, setIsGridView] = useState(true)
 
     const router = useRouter()
@@ -123,7 +126,8 @@ function DisplayFilesAndFolder({ currentFolderId }: DisplayFilesAndFolderProps) 
         setIsLoading(true)
         try {
             const response = await axios.post("/api/folder/get-folder-list", {
-                currentFolderId: currentFolderId
+                currentFolderId: currentFolderId,
+                userMongoId: userMongoId
             })
 
             if (response?.status === 201) {
@@ -426,21 +430,21 @@ function DisplayFilesAndFolder({ currentFolderId }: DisplayFilesAndFolderProps) 
                                 // onClick={() => handleSort('folderName')}
                                 className='col-span-4 md:col-span-4 border-r hover:bg-black h-full text-sm truncate pt-1 cursor-pointer'
                             >
-                                Items 
+                                Items
                                 {/* {sortKey === 'folderName' && (sortOrder === 'asc' ? '▲' : '▼')} */}
                             </div>
                             <p
                                 // onClick={() => handleSort('fileSize')}
                                 className="col-span-2 md:col-span-3 border-r text-sm hover:bg-black h-full pt-1 cursor-pointer"
                             >
-                                Size 
+                                Size
                                 {/* {sortKey === 'fileSize' && (sortOrder === 'asc' ? '▲' : '▼')} */}
                             </p>
                             <p
                                 // onClick={() => handleSort('createdAt')}
                                 className='col-span-3 md:col-span-3 border-r text-sm hover:bg-black h-full pt-1 cursor-pointer'
                             >
-                                Created At 
+                                Created At
                                 {/* {sortKey === 'createdAt' && (sortOrder === 'asc' ? '▲' : '▼')} */}
                             </p>
                             <p className='col-span-3 md:col-span-2 border-r text-sm hover:bg-black h-full pt-1'>Type</p>

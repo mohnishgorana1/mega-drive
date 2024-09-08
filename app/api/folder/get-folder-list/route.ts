@@ -5,16 +5,25 @@ import File from '@/models/file.modal';
 export async function POST(req: Request, res: Response) {
     await dbConnect();
 
-    const { currentFolderId } = await req.json();
+    const { currentFolderId, userMongoId } = await req.json();
 
     try {
-        const folders = await Folder.find({ parentFolderId: currentFolderId || null })
-        const files = await File.find({ folderId: currentFolderId || null })
+        const folders = await Folder.find({
+            parentFolderId: currentFolderId || null,
+            _id: userMongoId
+        })
+        const files = await File.find({
+            folderId: currentFolderId || null,
+            _id: userMongoId
+        })
+
+
         if (!folders && !files) {
             return new Response(JSON.stringify(
                 { message: "No Files/Folder Found" }
             ), { status: 400 });
         }
+        
         return new Response(JSON.stringify(
             {
                 message: "Folder fetched successfully",
