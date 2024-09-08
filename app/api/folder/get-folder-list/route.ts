@@ -10,11 +10,11 @@ export async function POST(req: Request, res: Response) {
     try {
         const folders = await Folder.find({
             parentFolderId: currentFolderId || null,
-            _id: userMongoId
+            userId: userMongoId
         })
         const files = await File.find({
             folderId: currentFolderId || null,
-            _id: userMongoId
+            userId: userMongoId
         })
 
 
