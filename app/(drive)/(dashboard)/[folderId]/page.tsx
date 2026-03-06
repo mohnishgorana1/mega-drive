@@ -1,4 +1,4 @@
-
+// /app/%28drive%29/%28home%29/%5BfolderId%5D/page.tsx
 import React from "react";
 
 import DisplayFilesAndFolder from "@/components/DisplayFilesAndFolder";

@@ -21,37 +21,41 @@ const config = {
     extend: {
       colors: {
         green: {
-          500: "#24AE7C",
-          600: "#0D2A1F",
+          500: "#34C759", // iOS Green
+          600: "#248A3D",
         },
         blue: {
-          500: "#79B5EC",
-          600: "#152432",
+          500: "#0A84FF", // iOS Blue
+          600: "#0064C8",
         },
         red: {
-          500: "#F37877",
-          600: "#3E1716",
-          700: "#F24E43",
+          500: "#FF453A", // iOS Red
+          600: "#C9342B",
+          700: "#9A251E",
         },
         light: {
-          200: "#E8E9E9",
+          200: "#F2F2F7", // iOS light background
         },
         dark: {
-          200: "#0D0F10",
-          300: "#131619",
-          400: "#1A1D21",
-          500: "#363A3D",
-          600: "#76828D",
-          700: "#ABB8C4",
+          100: "#000000", // iOS Pure Black (Base background)
+          200: "#0A0A0A", // Very dark
+          300: "#121212", // Card base
+          400: "#1C1C1E", // iOS Elevated Card (The standard dark mode gray)
+          500: "#2C2C2E", // iOS Elevated Hover
+          600: "#3A3A3C", // iOS Borders/Separators
+          700: "#8E8E93", // iOS Secondary Text
         },
       },
       fontFamily: {
         sans: ["var(--font-sans)", ...fontFamily.sans],
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        '3xl': "calc(var(--radius) + 8px)", // For extreme iOS curves (modals)
+        '2xl': "calc(var(--radius) + 4px)", // For cards
+        xl: "var(--radius)",
+        lg: "calc(var(--radius) - 2px)",
+        md: "calc(var(--radius) - 4px)",
+        sm: "calc(var(--radius) - 6px)",
       },
       keyframes: {
         "accordion-down": {

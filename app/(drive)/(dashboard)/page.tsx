@@ -1,9 +1,10 @@
+// app/(drive)/(home)/page.tsx
 import React from "react";
 
 import DisplayFilesAndFolder from "@/components/DisplayFilesAndFolder";
 
 // # Main page for displaying files and folders at the root level
-export default function Home() {
+export default function Dashbooard() {
 
   return (
     <main className="flex flex-col w-full gap-3">

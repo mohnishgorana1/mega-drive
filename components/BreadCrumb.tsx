@@ -1,75 +1,161 @@
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import axios from 'axios';
-import { FaGreaterThan } from "react-icons/fa6";
-export default function BreadCrumb({ currentFolderId }: { currentFolderId: string | null }) {
-    const [breadcrumb, setBreadcrumb] = useState([]);
-    const router = useRouter();
+"use client";
 
-    const fetchBreadcrumbPath = async (folderId: string) => {
-        const path: any = [];
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { ChevronRight, Home, Loader2, Trash2, Star } from "lucide-react";
 
-        // recursion
-        while (folderId) {
-            const response = await axios.post('/api/folder/get-breadCrumb-details', {
-                folderId,
-            });
-            console.log("breadcrumb response", response);
+interface BreadcrumbItem {
+  name: string;
+  id: string;
+}
 
-            if (response?.status === 201) {
-                const folder = response.data.folder;
-                path.unshift({
-                    name: folder.folderName,
-                    id: folder._id,
-                });
-                folderId = folder.parentFolderId;
-                console.log("path", path);
-            } else {
-                break;
-            }
-        }
+export default function BreadCrumb({
+  currentFolderId,
+}: {
+  currentFolderId: string | null;
+}) {
+  const pathName = usePathname();
+  const [breadcrumb, setBreadcrumb] = useState<BreadcrumbItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-        // Add the root folder (Home) at the beginning of the path
-        path.unshift({ name: 'Home', id: '' });
-        setBreadcrumb(path);
-    };
-
-    useEffect(() => {
-        if (currentFolderId) {
-            fetchBreadcrumbPath(currentFolderId);
-        } else {
-            setBreadcrumb([{ name: 'Home', id: '' }]);
-        }
-    }, [currentFolderId]);
-
+  // Handle static root routes (Trash / Favourites)
+  if (pathName === "/trash") {
     return (
-
-        <nav className="md:w-[70%]">
-            <ul className="flex flex-wrap">
-                {breadcrumb.map((folder, index) => {
-                    const isLastItem = index === breadcrumb.length - 1;
-                    return (
-                        <li key={index} className="">
-                            {isLastItem ? (
-                                <p className='flex px-2 pr-3 rounded-r-2xl items-center bg-[#396bbc]  font-bold'>
-                                    {folder.name}
-                                </p>
-                            ) : (
-                                <Link href={`/${folder.id}`} className='flex items-center'>
-                                    <p
-                                        className="px-2 pr-3 rounded-r-2xl bg-[#396bbc] text-white   hover:bg-[#17438b] font-bold"
-                                    >{folder.name}
-                                    </p>
-                                    <span className="text-gray-400 mx-2 font-bold text-xs">
-                                        <FaGreaterThan />
-                                    </span>
-                                </Link>
-                            )}
-                        </li>
-                    );
-                })}
-            </ul>
-        </nav>
+      <div className="flex items-center gap-4">
+        <div className="flex items-center justify-center w-12 h-12 rounded-full glass bg-red-500/10 text-red-500 border border-red-500/20 shadow-lg shadow-red-500/10 shrink-0">
+          <Trash2 size={24} strokeWidth={2.5} />
+        </div>
+        <div>
+          <h1 className="text-3xl font-bold text-white tracking-tight">
+            Trash
+          </h1>
+          <p className="text-gray-500 text-sm font-medium mt-1">
+            Items here can be restored or deleted permanently
+          </p>
+        </div>
+      </div>
     );
+  }
+  if (pathName === "/favourites") {
+    return (
+      <div className="flex items-center gap-4 mb-8">
+        <div className="flex items-center justify-center w-12 h-12 rounded-3xl glass bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 shadow-lg shadow-yellow-500/10">
+          <Star size={24} fill="currentColor" />
+        </div>
+        <div>
+          <h1 className="text-3xl font-bold text-white tracking-tight">
+            Favourites
+          </h1>
+          <p className="text-gray-500 text-sm font-medium">
+            Quick access to your starred items
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const fetchBreadcrumbPath = async (folderId: string) => {
+    setIsLoading(true);
+    const path: BreadcrumbItem[] = [];
+    let currentId = folderId;
+
+    try {
+      // Your exact recursive logic
+      while (currentId) {
+        const response = await axios.post(
+          "/api/folder/get-breadCrumb-details",
+          {
+            folderId: currentId,
+          },
+        );
+
+        if (response?.status === 201 || response?.status === 200) {
+          const folder = response.data.folder;
+          path.unshift({
+            name: folder.folderName,
+            id: folder._id,
+          });
+          currentId = folder.parentFolderId;
+        } else {
+          break;
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching breadcrumb path", error);
+    } finally {
+      // Add the root folder (Home) at the beginning of the path
+      path.unshift({ name: "My Drive", id: "" });
+      setBreadcrumb(path);
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (currentFolderId) {
+      fetchBreadcrumbPath(currentFolderId);
+    } else {
+      setBreadcrumb([{ name: "My Drive", id: "" }]);
+    }
+  }, [currentFolderId]);
+
+  return (
+    <nav className="flex items-center gap-1 sm:gap-2 text-sm sm:text-base font-medium overflow-x-auto remove-scrollbar max-w-full pb-2 md:pb-0 md:w-[70%]">
+      {breadcrumb.map((folder, index) => {
+        const isLastItem = index === breadcrumb.length - 1;
+        const isHome = index === 0;
+
+        return (
+          <div
+            key={folder.id || "home"}
+            className="flex items-center gap-1 sm:gap-2 shrink-0"
+          >
+            {/* Render Chevron separator for all items EXCEPT the first one (Home) */}
+            {!isHome && (
+              <ChevronRight size={16} className="text-gray-600 shrink-0" />
+            )}
+
+            <Link
+              href={`/${folder.id}`}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all duration-200 max-w-[120px] sm:max-w-[200px] ${
+                isLastItem
+                  ? "text-white bg-dark-400 shadow-sm cursor-default" // Active Folder
+                  : "text-gray-400 hover:text-white hover:bg-dark-400 cursor-pointer" // Parent Folders
+              }`}
+              // Prevent clicking if we are already in this exact folder
+              aria-disabled={isLastItem}
+              tabIndex={isLastItem ? -1 : 0}
+              onClick={(e) => isLastItem && e.preventDefault()}
+            >
+              {/* Attach the Home icon only to the first item */}
+              {isHome && (
+                <Home size={18} className={isLastItem ? "text-blue-500" : ""} />
+              )}
+
+              <span className={`${isHome ? "hidden sm:inline" : "truncate"}`}>
+                {folder.name}
+              </span>
+
+              {/* Mobile short-name for Home */}
+              {isHome && <span className="sm:hidden">Drive</span>}
+            </Link>
+          </div>
+        );
+      })}
+
+      {/* Loading State Spinner */}
+      {isLoading && (
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+          <ChevronRight size={16} className="text-gray-600 shrink-0" />
+          <div className="px-3 py-1.5">
+            <Loader2
+              size={16}
+              className="animate-spin text-blue-500 shrink-0"
+            />
+          </div>
+        </div>
+      )}
+    </nav>
+  );
 }

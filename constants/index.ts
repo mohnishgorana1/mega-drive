@@ -1,14 +1,23 @@
+import { 
+    MdOutlineFolderOpen, 
+    MdOutlineDelete, 
+    MdOutlineStarBorder 
+} from "react-icons/md";
+
 export const navLinks = [
     {
         route: "/",
-        label: "All Files"
+        label: "All Files",
+        icon: MdOutlineFolderOpen,
     },
     {
-        route: "/trash",
-        label: "Trash"
-    }, {
         route: "/favourites",
-        label: "Favourites"
+        label: "Favourites",
+        icon: MdOutlineStarBorder,
     }, 
-    
+    {
+        route: "/trash",
+        label: "Trash",
+        icon: MdOutlineDelete,
+    }, 
 ];

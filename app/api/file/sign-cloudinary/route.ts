@@ -1,3 +1,5 @@
+// app/api/file/sign-cloudinary/route.ts
+
 import { v2 as cloudinary } from "cloudinary"
 
 

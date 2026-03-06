@@ -13,9 +13,8 @@ const fontSans = Plus_Jakarta_Sans({
   variable: '--font-sans'
 });
 
-
 export const metadata: Metadata = {
-  title: "Mega Drive",
+  title: "MDrive",
   description: "Simplify Your Storage."
 };
 
@@ -29,16 +28,21 @@ export default function RootLayout({
       appearance={{
         baseTheme: dark,
         variables: {
-          colorPrimary: "#3371ff",
+          colorPrimary: "#0A84FF", // Updated to iOS Blue
+          colorBackground: "transparent",
+          colorInputBackground: "rgba(255, 255, 255, 0.05)",
+          colorInputText: "#ffffff",
+          borderRadius: "1rem", // 16px curve for Clerk inputs
           fontSize: "16px"
         },
       }}>
-
       <html lang="en">
-        <body className={cn('min-h-screen bg-dark-300 font-sans antialiased', fontSans.className)}>
+        {/* Changed background to dark-100 (pure black) for maximum contrast with glass panels */}
+        <body className={cn('min-h-screen bg-dark-100 font-sans antialiased selection:bg-blue-500/30 text-white', fontSans.className)}>
           <ThemeProvider
             attribute="class"
-            defaultTheme="system"
+            defaultTheme="dark" // Forced to dark as requested
+            enableSystem={false}
           >
               {children}
           </ThemeProvider>

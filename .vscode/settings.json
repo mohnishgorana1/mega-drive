@@ -1,4 +1,11 @@
 {
     "pieces.cloudCapabilities": "Blended",
-    "pieces.telemetry": true
+    "pieces.telemetry": true,
+    "python-envs.pythonProjects": [
+        {
+            "path": "models",
+            "envManager": "ms-python.python:venv",
+            "packageManager": "ms-python.python:pip"
+        }
+    ]
 }
