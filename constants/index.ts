@@ -1,3 +1,4 @@
+import { HardDrive } from "lucide-react";
 import { 
     MdOutlineFolderOpen, 
     MdOutlineDelete, 
@@ -6,17 +7,17 @@ import {
 
 export const navLinks = [
     {
-        route: "/",
-        label: "All Files",
-        icon: MdOutlineFolderOpen,
+        route: "/dashboard",
+        label: "My Drive",
+        icon: HardDrive,
     },
     {
-        route: "/favourites",
+        route: "/dashboard/favourites",
         label: "Favourites",
         icon: MdOutlineStarBorder,
     }, 
     {
-        route: "/trash",
+        route: "/dashboard/trash",
         label: "Trash",
         icon: MdOutlineDelete,
     }, 

@@ -13,15 +13,17 @@ interface BreadcrumbItem {
 
 export default function BreadCrumb({
   currentFolderId,
+  classNames = "",
 }: {
   currentFolderId: string | null;
+  classNames?: string;
 }) {
   const pathName = usePathname();
   const [breadcrumb, setBreadcrumb] = useState<BreadcrumbItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   // Handle static root routes (Trash / Favourites)
-  if (pathName === "/trash") {
+  if (pathName === "/dashboard/trash") {
     return (
       <div className="flex items-center gap-4">
         <div className="flex items-center justify-center w-12 h-12 rounded-full glass bg-red-500/10 text-red-500 border border-red-500/20 shadow-lg shadow-red-500/10 shrink-0">
@@ -38,7 +40,7 @@ export default function BreadCrumb({
       </div>
     );
   }
-  if (pathName === "/favourites") {
+  if (pathName === "/dashboard/favourites") {
     return (
       <div className="flex items-center gap-4 mb-8">
         <div className="flex items-center justify-center w-12 h-12 rounded-3xl glass bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 shadow-lg shadow-yellow-500/10">
@@ -101,7 +103,9 @@ export default function BreadCrumb({
   }, [currentFolderId]);
 
   return (
-    <nav className="flex items-center gap-1 sm:gap-2 text-sm sm:text-base font-medium overflow-x-auto remove-scrollbar max-w-full pb-2 md:pb-0 md:w-[70%]">
+    <nav
+      className={`flex items-center gap-1 sm:gap-2 text-sm sm:text-base font-medium overflow-x-auto remove-scrollbar max-w-full pb-2 md:pb-0 md:w-[70%] ${classNames}`}
+    >
       {breadcrumb.map((folder, index) => {
         const isLastItem = index === breadcrumb.length - 1;
         const isHome = index === 0;
@@ -116,8 +120,9 @@ export default function BreadCrumb({
               <ChevronRight size={16} className="text-gray-600 shrink-0" />
             )}
 
+            {/* 🚀 FIXED: Agar ID nahi hai (yani Home hai), toh /dashboard pe jao */}
             <Link
-              href={`/${folder.id}`}
+              href={folder.id ? `/dashboard/${folder.id}` : "/dashboard"}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all duration-200 max-w-[120px] sm:max-w-[200px] ${
                 isLastItem
                   ? "text-white bg-dark-400 shadow-sm cursor-default" // Active Folder
