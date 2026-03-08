@@ -15,6 +15,7 @@ import {
   ClipboardPaste,
   Scissors,
   Copy,
+  Share2,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -54,6 +55,7 @@ import { useUser } from "@clerk/nextjs";
 import { Button } from "./ui/button";
 import EmptyTrashDialog from "./EmptyTrashDialog";
 import BulkDeleteConfirmationDialog from "./BulkDeleteConfirmationDialog";
+import ShareModal from "./ShareModal";
 interface DisplayFilesAndFolderProps {
   currentFolderId: string | null;
 }
@@ -119,6 +121,14 @@ export default function DisplayFilesAndFolder({
 
   // clipboard
   const [clipboard, setClipboard] = useState<ClipboardState>(null);
+
+  // share states
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [shareItemData, setShareItemData] = useState<{
+    id: string;
+    name: string;
+    type: "file" | "folder";
+  } | null>(null);
 
   // --- 🔥 FAVORITE TOGGLE HANDLER ---
   const handleToggleFavourite = async (
@@ -340,6 +350,16 @@ export default function DisplayFilesAndFolder({
     }
   };
 
+  // share
+  const handleShareClick = (
+    id: string,
+    name: string,
+    type: "file" | "folder",
+  ) => {
+    setShareItemData({ id, name, type });
+    setIsShareModalOpen(true);
+  };
+
   const fetchFilesAndFolders = async (showLoadingState = true) => {
     if (showLoadingState) setIsLoading(true);
     try {
@@ -535,7 +555,11 @@ export default function DisplayFilesAndFolder({
             <ContextMenu key={folder._id}>
               <ContextMenuTrigger>
                 <Link
-                  href={currentFolderId === "trash" ? "#" : `/dashboard/${folder._id}`}
+                  href={
+                    currentFolderId === "trash"
+                      ? "#"
+                      : `/dashboard/${folder._id}`
+                  }
                 >
                   <div className="relative group">
                     {/* VISUAL STAR INDICATOR (Hidden in Trash) */}
@@ -696,6 +720,19 @@ export default function DisplayFilesAndFolder({
                       className="hover:bg-dark-400 focus:bg-dark-400 rounded-xl cursor-pointer py-2 px-3"
                     >
                       Rename
+                    </ContextMenuItem>
+                    <ContextMenuItem
+                      onClick={() =>
+                        handleShareClick(
+                          folder._id,
+                          folder.folderName!,
+                          "folder",
+                        )
+                      }
+                      className="hover:bg-blue-500/20 focus:bg-blue-500/20 rounded-xl cursor-pointer py-2 px-3 flex items-center gap-2"
+                    >
+                      <Share2 size={16} className="text-blue-400" />
+                      Share Link
                     </ContextMenuItem>
                     <ContextMenuSeparator className="bg-white/10" />
                     <ContextMenuItem
@@ -882,6 +919,15 @@ export default function DisplayFilesAndFolder({
                     >
                       Rename
                     </ContextMenuItem>
+                    <ContextMenuItem
+                      onClick={() =>
+                        handleShareClick(file._id, file.fileName!, "file")
+                      }
+                      className="hover:bg-blue-500/20 focus:bg-blue-500/20 rounded-xl cursor-pointer py-2 px-3 flex items-center gap-2"
+                    >
+                      <Share2 size={16} className="text-blue-400" />
+                      Share Link
+                    </ContextMenuItem>
                     <ContextMenuSeparator className="bg-white/10" />
                     <ContextMenuItem
                       onClick={(e) => {
@@ -947,6 +993,19 @@ export default function DisplayFilesAndFolder({
         handleBulkDelete={handleBulkDelete}
         isLoading={isLoading}
       />
+
+      {/* Sabhi modals ke niche ye add karo */}
+      {isShareModalOpen && shareItemData && (
+        <ShareModal
+          itemId={shareItemData.id}
+          itemName={shareItemData.name}
+          itemType={shareItemData.type}
+          onClose={() => {
+            setIsShareModalOpen(false);
+            setShareItemData(null);
+          }}
+        />
+      )}
 
       {/* 🚀 FLOATING ACTION BAR FOR MULTI-SELECT */}
       {selectedItems.length > 0 && (

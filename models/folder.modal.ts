@@ -9,6 +9,8 @@ export interface IFolder extends Document {
   parentFolderId: mongoose.Schema.Types.ObjectId | null;
   isFavourite: boolean;
   isTrashed: boolean;
+  isPublic: boolean;
+  shareToken?: string;
   createdAt: Date;
   updatedAt: Date;
   files: IFile[];
@@ -44,9 +46,18 @@ const folderSchema = new Schema<IFolder>({
     default: false,
   },
   isTrashed: {
-  type: Boolean,
-  default: false
-},
+    type: Boolean,
+    default: false,
+  },
+  isPublic: {
+    type: Boolean,
+    default: false,
+  },
+  shareToken: {
+    type: String,
+    unique: true,
+    sparse: true,
+  },
   folderSize: {
     type: Number,
     default: 0,

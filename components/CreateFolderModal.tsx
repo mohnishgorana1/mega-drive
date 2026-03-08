@@ -36,6 +36,9 @@ export default function CreateFolderModal({
   const handleCreateFolder = async () => {
     setIsLoading(true);
 
+    console.log("Creating folder with name:", folderName);
+    console.log("Current Folder ID:", currentFolderId);
+
     try {
       const response = await axios.post("/api/folder/create-folder", {
         folderName: folderName || "Untitled Folder",

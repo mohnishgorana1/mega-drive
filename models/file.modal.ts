@@ -12,6 +12,8 @@ export interface IFile extends Document {
   isFavourite: boolean;
   isTrashed: boolean;
   fileSize: number;
+  isPublic: boolean;
+  shareToken?: string;
   databaseLocations: {
     public_id: string;
     secure_url: string;
@@ -49,6 +51,15 @@ const fileSchema = new Schema<IFile>({
   isTrashed: {
     type: Boolean,
     default: false,
+  },
+  isPublic: {
+    type: Boolean,
+    default: false, // Default mein private rahega
+  },
+  shareToken: {
+    type: String,
+    unique: true,
+    sparse: true, // Sparse isliye taaki null values unique constraint ko na todein
   },
   userId: {
     type: Schema.Types.ObjectId,

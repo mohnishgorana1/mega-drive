@@ -23,8 +23,11 @@ export default function Header() {
   const userMongoId = user?.publicMetadata?.userMongoId as string | undefined;
   const pathname = usePathname(); // Get current URL
 
-  // Check if we are on the landing page
   const isHomePage = pathname === "/";
+  // Check if we are on a share page
+  const isSharePage = pathname.startsWith("/share");
+  // Search bar sirf dashboard routes pe dikhe
+  const showSearch = pathname.startsWith("/dashboard");
 
   const [searchKeyword, setSearchKeyword] = useState("");
   const debouncedKeyword = useDebounce(searchKeyword, 300);
@@ -78,12 +81,15 @@ export default function Header() {
   }, [debouncedKeyword, userMongoId, isHomePage]);
 
   return (
-    // Agar home page hai, toh sticky top ke bajaye fixed lenge taaki background blend ho jaye
     <header
-      className={`${isHomePage ? "fixed top-0 left-0 right-0 border-b border-white/5 bg-[#0a0a0a]/60 backdrop-blur-xl" : "glass-header sticky top-0"} flex h-16 shrink-0 items-center justify-between px-4 sm:px-6 lg:px-8 z-50`}
+      className={`${
+        isHomePage || isSharePage
+          ? "fixed top-0 left-0 right-0 border-b border-white/5 bg-[#0a0a0a]/60 backdrop-blur-xl"
+          : "glass-header sticky top-0"
+      } flex h-16 shrink-0 items-center justify-between px-4 sm:px-6 lg:px-8 z-50`}
     >
       {/* 🚀 LEFT SECTION: Logo (Home) OR Mobile Nav (Dashboard) */}
-      {isHomePage ? (
+      {isHomePage || isSharePage ? (
         <div className="flex items-center">
           <Logo isCollapsed={false} />
         </div>
@@ -93,8 +99,8 @@ export default function Header() {
         </div>
       )}
 
-      {/* 🔍 MIDDLE SECTION: Global Search Bar (Hide on Home Page) */}
-      {!isHomePage && (
+      {/* 🔍 MIDDLE SECTION: Global Search Bar (Hide on Home Page and Share Page) */}
+      {showSearch && (
         <div
           className="flex-1 items-center justify-center px-4 max-w-2xl mx-auto hidden sm:flex relative"
           ref={dropdownRef}
@@ -196,7 +202,7 @@ export default function Header() {
 
       {/* 🧑‍💻 RIGHT SECTION: User Auth Actions */}
       <div className="flex items-center gap-4 ml-auto">
-        {isHomePage && userMongoId && (
+        {(isHomePage || isSharePage) && userMongoId && (
           <Link
             href="/dashboard"
             className="text-sm font-medium text-gray-300 hover:text-white transition-colors hidden sm:block mr-2"
