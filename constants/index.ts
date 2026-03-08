@@ -1,24 +1,24 @@
-import { HardDrive } from "lucide-react";
-import { 
-    MdOutlineFolderOpen, 
-    MdOutlineDelete, 
-    MdOutlineStarBorder 
-} from "react-icons/md";
+import { Globe, LayoutDashboard, Star, Trash2 } from "lucide-react";
 
 export const navLinks = [
-    {
-        route: "/dashboard",
-        label: "My Drive",
-        icon: HardDrive,
-    },
-    {
-        route: "/dashboard/favourites",
-        label: "Favourites",
-        icon: MdOutlineStarBorder,
-    }, 
-    {
-        route: "/dashboard/trash",
-        label: "Trash",
-        icon: MdOutlineDelete,
-    }, 
+  {
+    route: "/dashboard",
+    label: "My Drive",
+    icon: LayoutDashboard,
+  },
+  {
+    route: "/dashboard/favourites",
+    label: "Favourites",
+    icon: Star,
+  },
+  {
+    route: "/dashboard/shared",
+    label: "Shared Links",
+    icon: Globe,
+  },
+  {
+    route: "/dashboard/trash",
+    label: "Trash",
+    icon: Trash2,
+  },
 ];

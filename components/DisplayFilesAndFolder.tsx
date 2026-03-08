@@ -5,7 +5,6 @@ import {
   Loader2,
   LayoutGrid,
   List as ListIcon,
-  ArrowUpDown,
   Folder,
   Star,
   Trash2,
@@ -16,6 +15,9 @@ import {
   Scissors,
   Copy,
   Share2,
+  LinkIcon,
+  XCircle,
+  Globe,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -30,6 +32,7 @@ import DownloadFileDialog from "./DownloadFileDialog";
 import RenameFileOrFolder from "./RenameFileOrFolder";
 import DeleteFileOrFolder from "./DeleteFileOrFolder";
 import BreadCrumb from "./BreadCrumb";
+import ShareModal from "./ShareModal";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -55,7 +58,7 @@ import { useUser } from "@clerk/nextjs";
 import { Button } from "./ui/button";
 import EmptyTrashDialog from "./EmptyTrashDialog";
 import BulkDeleteConfirmationDialog from "./BulkDeleteConfirmationDialog";
-import ShareModal from "./ShareModal";
+
 interface DisplayFilesAndFolderProps {
   currentFolderId: string | null;
 }
@@ -175,7 +178,7 @@ export default function DisplayFilesAndFolder({
     name: string,
   ) => {
     e.preventDefault();
-    e.stopPropagation(); // Ye zaroori hai taaki folder open na ho jaye click karne par
+    e.stopPropagation();
 
     setSelectedItems((prev) => {
       const isSelected = prev.some((item) => item.id === id);
@@ -274,7 +277,7 @@ export default function DisplayFilesAndFolder({
         isTrashed,
       });
       if (response.status === 200) {
-        setSelectedItems([]); // Clear selection
+        setSelectedItems([]);
         window.dispatchEvent(new Event("drive-item-changed"));
       }
     } catch (error) {
@@ -293,8 +296,8 @@ export default function DisplayFilesAndFolder({
         userId: userMongoId,
       });
       if (response.status === 200) {
-        setSelectedItems([]); // Clear selection
-        setIsBulkDeleteDialogOpen(false); // Close modal
+        setSelectedItems([]);
+        setIsBulkDeleteDialogOpen(false);
         window.dispatchEvent(new Event("drive-item-changed"));
       }
     } catch (error) {
@@ -315,14 +318,13 @@ export default function DisplayFilesAndFolder({
     setClipboard(clipboardData);
     sessionStorage.setItem("drive-clipboard", JSON.stringify(clipboardData));
 
-    // Copy/Cut karne ke baad selection clear karna padega na
     setSelectedItems([]);
   };
 
   const handlePaste = async () => {
     if (!clipboard || !userMongoId || clipboard.items.length === 0) return;
 
-    setIsLoading(true); // Loader start
+    setIsLoading(true);
 
     try {
       const response = await axios.post("/api/items/bulk-paste", {
@@ -336,21 +338,18 @@ export default function DisplayFilesAndFolder({
       });
 
       if (response.status === 200) {
-        // Successful hone par clipboard saaf kar do
         setClipboard(null);
         sessionStorage.removeItem("drive-clipboard");
-
-        // UI ko turant refresh karne ke liye
         window.dispatchEvent(new Event("drive-item-changed"));
       }
     } catch (error) {
       console.error("Failed to paste items", error);
     } finally {
-      setIsLoading(false); // Loader stop
+      setIsLoading(false);
     }
   };
 
-  // share
+  // --- SHARE HANDLERS ---
   const handleShareClick = (
     id: string,
     name: string,
@@ -358,6 +357,20 @@ export default function DisplayFilesAndFolder({
   ) => {
     setShareItemData({ id, name, type });
     setIsShareModalOpen(true);
+  };
+
+  const handleRevoke = async (itemId: string, itemType: string) => {
+    try {
+      const res = await axios.post("/api/items/revoke-access", {
+        itemId,
+        itemType,
+      });
+      if (res.status === 200) {
+        window.dispatchEvent(new Event("drive-item-changed"));
+      }
+    } catch (error) {
+      console.error("Revoke failed", error);
+    }
   };
 
   const fetchFilesAndFolders = async (showLoadingState = true) => {
@@ -406,12 +419,10 @@ export default function DisplayFilesAndFolder({
       window.removeEventListener("drive-item-changed", handleItemChanged);
   }, [isLoaded, userMongoId, currentFolderId]);
 
-  // Clear selected items whenever the folder changes
   useEffect(() => {
     setSelectedItems([]);
   }, [currentFolderId]);
 
-  // Load clipboard from sessionStorage on mount
   useEffect(() => {
     const saved = sessionStorage.getItem("drive-clipboard");
     if (saved) {
@@ -455,14 +466,12 @@ export default function DisplayFilesAndFolder({
     <main className="flex flex-col w-full h-full">
       {/* --- TOP BAR SECTION --- */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8">
-        {/* Breadcrumb wrapper (Taaki mobile pe scroll ho sake aur squish na ho) */}
         <div className="flex-1 min-w-0 overflow-x-auto remove-scrollbar pb-1 lg:pb-0">
           <BreadCrumb currentFolderId={currentFolderId} />
         </div>
 
-        {/* Action Buttons Wrapper (Flex wrap taaki chhote screen pe toot na jaye) */}
         <div className="flex flex-wrap items-center gap-2 sm:gap-3 lg:justify-end shrink-0">
-          {/* 🚀 PREMIUM PASTE BUTTON (Segmented Pill Style) */}
+          {/* PREMIUM PASTE BUTTON */}
           {clipboard &&
             clipboard.items.length > 0 &&
             currentFolderId !== "trash" && (
@@ -475,11 +484,7 @@ export default function DisplayFilesAndFolder({
                   <span className="hidden sm:inline">Paste</span>{" "}
                   {clipboard.items.length}
                 </button>
-
-                {/* Divider Line */}
                 <div className="w-px h-5 bg-blue-500/20"></div>
-
-                {/* Clear Clipboard Button */}
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -514,7 +519,6 @@ export default function DisplayFilesAndFolder({
             </button>
           </div>
 
-          {/* Filter Dropdown */}
           <Select
             value={filter}
             onValueChange={(val) => setFilter(val as FilterType)}
@@ -529,7 +533,6 @@ export default function DisplayFilesAndFolder({
             </SelectContent>
           </Select>
 
-          {/* Empty Trash Button */}
           {currentFolderId === "trash" && (
             <Button
               onClick={() => setIsEmptyTrashDialogOpen(true)}
@@ -562,12 +565,32 @@ export default function DisplayFilesAndFolder({
                   }
                 >
                   <div className="relative group">
-                    {/* VISUAL STAR INDICATOR (Hidden in Trash) */}
-                    {folder.isFavourite && currentFolderId !== "trash" && (
-                      <div className="absolute top-2 right-3 z-10 text-yellow-500 drop-shadow-md">
-                        <Star size={14} fill="currentColor" />
-                      </div>
-                    )}
+                    {/* 🌟 ICONS WRAPPER (Top Right) */}
+                    <div className="absolute top-3 right-3 z-10 flex flex-col gap-1.5 items-end">
+                      {/* 🌍 PUBLIC GLOBE BADGE */}
+                      {folder.isPublic && currentFolderId !== "trash" && (
+                        <div
+                          className="p-1.5 rounded-lg bg-green-500/20 border border-green-500/30 backdrop-blur-md shadow-lg shadow-green-500/10"
+                          title="Shared publicly"
+                        >
+                          <Globe
+                            size={12}
+                            className="text-green-400 animate-pulse"
+                          />
+                        </div>
+                      )}
+                      {/* ⭐ STAR INDICATOR */}
+                      {folder.isFavourite && currentFolderId !== "trash" && (
+                        <div className="drop-shadow-md">
+                          <Star
+                            size={14}
+                            className="text-yellow-500"
+                            fill="currentColor"
+                          />
+                        </div>
+                      )}
+                    </div>
+
                     {isGridView ? (
                       <div
                         className={`flex flex-col items-center justify-center p-5 rounded-3xl bg-dark-400/30 border border-white/5 hover:bg-dark-400/60 hover:border-white/10 transition-all duration-300 gap-4 cursor-pointer backdrop-blur-sm ${currentFolderId === "trash" && "opacity-60 grayscale hover:opacity-100 hover:grayscale-0"}
@@ -578,7 +601,7 @@ export default function DisplayFilesAndFolder({
                         }
                       `}
                       >
-                        {/* 🟢 Selection Checkbox/Circle (Top Left) */}
+                        {/* 🟢 Selection Checkbox (Top Left) */}
                         <div
                           onClick={(e) =>
                             toggleSelection(
@@ -608,7 +631,7 @@ export default function DisplayFilesAndFolder({
                             <CheckCircle2 size={14} className="text-white" />
                           )}
                         </div>
-                        <div className="p-3 rounded-2xl bg-blue-500/10 group-hover:bg-blue-500/20 transition-colors">
+                        <div className="p-3 rounded-2xl bg-blue-500/10 group-hover:bg-blue-500/20 transition-colors mt-2">
                           <Folder
                             className="text-blue-500 drop-shadow-md size-10"
                             strokeWidth={2}
@@ -620,18 +643,60 @@ export default function DisplayFilesAndFolder({
                       </div>
                     ) : (
                       <div
-                        className={`grid grid-cols-12 gap-4 px-6 py-3.5 items-center rounded-2xl hover:bg-dark-400/40 cursor-pointer transition-all border border-transparent hover:border-white/5 ${currentFolderId === "trash" && "opacity-60 hover:opacity-100"}`}
+                        className={`grid grid-cols-12 gap-4 px-6 py-3.5 items-center rounded-2xl hover:bg-dark-400/40 cursor-pointer transition-all border border-transparent hover:border-white/5 relative ${currentFolderId === "trash" && "opacity-60 hover:opacity-100"}`}
                       >
-                        <div className="col-span-6 md:col-span-5 flex items-center gap-4 overflow-hidden">
-                          <div className="p-2 rounded-xl bg-blue-500/10 shrink-0">
+                        <div className="col-span-6 md:col-span-5 flex items-center gap-4 overflow-hidden relative pl-6">
+                          <div
+                            onClick={(e) =>
+                              toggleSelection(
+                                e,
+                                folder._id,
+                                "Folder",
+                                folder.folderName!,
+                              )
+                            }
+                            className="absolute left-0 w-4 h-4 rounded-full border-2 border-gray-400 flex items-center justify-center hover:border-blue-400 transition-colors"
+                            style={{
+                              background: selectedItems.some(
+                                (item) => item.id === folder._id,
+                              )
+                                ? "#3b82f6"
+                                : "transparent",
+                              borderColor: selectedItems.some(
+                                (item) => item.id === folder._id,
+                              )
+                                ? "#3b82f6"
+                                : "",
+                            }}
+                          >
+                            {selectedItems.some(
+                              (item) => item.id === folder._id,
+                            ) && (
+                              <CheckCircle2 size={10} className="text-white" />
+                            )}
+                          </div>
+
+                          <div className="p-2 rounded-xl bg-blue-500/10 shrink-0 relative">
                             <Folder
                               className="text-blue-500"
                               size={18}
                               strokeWidth={2.5}
                             />
+                            {folder.isPublic && currentFolderId !== "trash" && (
+                              <div className="absolute -top-1 -right-1 bg-green-500 rounded-full p-0.5">
+                                <Globe size={8} className="text-white" />
+                              </div>
+                            )}
                           </div>
-                          <p className="text-sm font-semibold text-white truncate">
+                          <p className="text-sm font-semibold text-white truncate flex items-center gap-2">
                             {folder.folderName}
+                            {folder.isFavourite && (
+                              <Star
+                                size={12}
+                                className="text-yellow-500"
+                                fill="currentColor"
+                              />
+                            )}
                           </p>
                         </div>
                         <p className="col-span-3 md:col-span-2 text-xs font-medium text-gray-400">
@@ -650,7 +715,6 @@ export default function DisplayFilesAndFolder({
               </ContextMenuTrigger>
               <ContextMenuContent className="glass-panel border-white/10 text-white px-2">
                 {currentFolderId === "trash" ? (
-                  // 🗑️ TRASH VIEW FOLDER OPTIONS
                   <>
                     <ContextMenuItem
                       onClick={(e) => {
@@ -677,11 +741,10 @@ export default function DisplayFilesAndFolder({
                     </ContextMenuItem>
                   </>
                 ) : (
-                  // 📁 NORMAL DRIVE FOLDER OPTIONS
                   <>
                     <ContextMenuItem
                       asChild
-                      className="hover:bg-blue-500/20 focus:bg-blue-500/20 rounded-xl cursor-pointer py-2 px-3"
+                      className="hover:bg-blue-500/20 focus:bg-blue-500/20 rounded-xl cursor-pointer py-2.5 px-3"
                     >
                       <Link href={`/dashboard/${folder._id}`}>Open Folder</Link>
                     </ContextMenuItem>
@@ -694,7 +757,7 @@ export default function DisplayFilesAndFolder({
                           folder.isFavourite ?? false,
                         );
                       }}
-                      className="hover:bg-blue-500/20 focus:bg-blue-500/20 rounded-xl cursor-pointer py-2 px-3 flex items-center justify-between"
+                      className="hover:bg-blue-500/20 focus:bg-blue-500/20 rounded-xl cursor-pointer py-2.5 px-3 flex items-center justify-between"
                     >
                       {folder.isFavourite
                         ? "Remove from Favourites"
@@ -717,30 +780,59 @@ export default function DisplayFilesAndFolder({
                           folder.folderName || "Unknown",
                         )
                       }
-                      className="hover:bg-dark-400 focus:bg-dark-400 rounded-xl cursor-pointer py-2 px-3"
+                      className="hover:bg-dark-400 focus:bg-dark-400 rounded-xl cursor-pointer py-2.5 px-3"
                     >
                       Rename
                     </ContextMenuItem>
-                    <ContextMenuItem
-                      onClick={() =>
-                        handleShareClick(
-                          folder._id,
-                          folder.folderName!,
-                          "folder",
-                        )
-                      }
-                      className="hover:bg-blue-500/20 focus:bg-blue-500/20 rounded-xl cursor-pointer py-2 px-3 flex items-center gap-2"
-                    >
-                      <Share2 size={16} className="text-blue-400" />
-                      Share Link
-                    </ContextMenuItem>
+
+                    {!folder.isPublic ? (
+                      <ContextMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleShareClick(
+                            folder._id,
+                            folder.folderName!,
+                            "folder",
+                          );
+                        }}
+                        className="hover:bg-blue-500/20 focus:bg-blue-500/20 rounded-xl cursor-pointer py-2.5 px-3 flex items-center gap-2"
+                      >
+                        <Share2 size={16} className="text-blue-400" />
+                        Share Link
+                      </ContextMenuItem>
+                    ) : (
+                      <>
+                        <ContextMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const url = `${window.location.origin}/share/${folder.shareToken}?type=folder`;
+                            navigator.clipboard.writeText(url);
+                          }}
+                          className="hover:bg-green-500/20 focus:bg-green-500/20 rounded-xl cursor-pointer py-2.5 px-3 flex items-center gap-2"
+                        >
+                          <LinkIcon size={16} className="text-green-400" />
+                          Copy Shared Link
+                        </ContextMenuItem>
+                        <ContextMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRevoke(folder._id, "folder");
+                          }}
+                          className="text-red-400 hover:bg-red-500/20 focus:bg-red-500/20 rounded-xl cursor-pointer py-2.5 px-3 flex items-center gap-2 font-medium"
+                        >
+                          <XCircle size={16} />
+                          Stop Sharing
+                        </ContextMenuItem>
+                      </>
+                    )}
+
                     <ContextMenuSeparator className="bg-white/10" />
                     <ContextMenuItem
                       onClick={(e) => {
                         e.stopPropagation();
                         handleMoveToTrash(folder._id, "Folder");
                       }}
-                      className="text-red-400 hover:bg-red-500/20 focus:bg-red-500/20 rounded-xl cursor-pointer py-2 px-3 font-medium"
+                      className="text-red-400 hover:bg-red-500/20 focus:bg-red-500/20 rounded-xl cursor-pointer py-2.5 px-3 font-medium"
                     >
                       Move to Trash
                     </ContextMenuItem>
@@ -761,24 +853,43 @@ export default function DisplayFilesAndFolder({
                   }
                   className="relative group"
                 >
-                  {/* VISUAL STAR INDICATOR (Hidden in Trash) */}
-                  {file.isFavourite && currentFolderId !== "trash" && (
-                    <div className="absolute top-2 right-2 z-10 text-yellow-500 drop-shadow-md">
-                      <Star size={14} fill="currentColor" />
-                    </div>
-                  )}
+                  {/* 🌟 ICONS WRAPPER (Top Right) */}
+                  <div className="absolute top-3 right-3 z-10 flex flex-col gap-1.5 items-end">
+                    {/* 🌍 PUBLIC GLOBE BADGE */}
+                    {file.isPublic && currentFolderId !== "trash" && (
+                      <div
+                        className="p-1.5 rounded-lg bg-green-500/20 border border-green-500/30 backdrop-blur-md shadow-lg shadow-green-500/10"
+                        title="Shared publicly"
+                      >
+                        <Globe
+                          size={12}
+                          className="text-green-400 animate-pulse"
+                        />
+                      </div>
+                    )}
+                    {/* ⭐ STAR INDICATOR */}
+                    {file.isFavourite && currentFolderId !== "trash" && (
+                      <div className="drop-shadow-md">
+                        <Star
+                          size={14}
+                          className="text-yellow-500"
+                          fill="currentColor"
+                        />
+                      </div>
+                    )}
+                  </div>
 
                   {isGridView ? (
                     <div
                       className={`flex flex-col items-center justify-between p-4 rounded-3xl bg-dark-400/30 border border-white/5 hover:bg-dark-400/60 hover:border-white/10 transition-all duration-300 cursor-pointer backdrop-blur-sm h-[140px] ${currentFolderId === "trash" && "opacity-60 grayscale hover:opacity-100 hover:grayscale-0"}
                       ${
                         selectedItems.some((item) => item.id === file._id)
-                          ? "bg-blue-500/20 border-blue-500 shadow-lg shadow-blue-500/20" // 🔵 SELECTED STATE
-                          : "bg-dark-400/30 border-white/5 hover:bg-dark-400/60 hover:border-white/10" // ⚪ NORMAL STATE
+                          ? "bg-blue-500/20 border-blue-500 shadow-lg shadow-blue-500/20"
+                          : "bg-dark-400/30 border-white/5 hover:bg-dark-400/60 hover:border-white/10"
                       }
                       `}
                     >
-                      {/* 🟢 Selection Checkbox/Circle (Top Left) */}
+                      {/* 🟢 Selection Checkbox (Top Left) */}
                       <div
                         onClick={(e) =>
                           toggleSelection(e, file._id, "File", file.fileName!)
@@ -813,10 +924,35 @@ export default function DisplayFilesAndFolder({
                     </div>
                   ) : (
                     <div
-                      className={`grid grid-cols-12 gap-4 px-6 py-3 items-center rounded-2xl hover:bg-dark-400/40 cursor-pointer transition-all border border-transparent hover:border-white/5 ${currentFolderId === "trash" && "opacity-60 hover:opacity-100"}`}
+                      className={`grid grid-cols-12 gap-4 px-6 py-3 items-center rounded-2xl hover:bg-dark-400/40 cursor-pointer transition-all border border-transparent hover:border-white/5 relative ${currentFolderId === "trash" && "opacity-60 hover:opacity-100"}`}
                     >
-                      <div className="col-span-6 md:col-span-5 flex items-center gap-4 overflow-hidden">
-                        <div className="w-10 h-10 flex items-center justify-center bg-dark-500/50 rounded-xl shrink-0 overflow-hidden">
+                      <div className="col-span-6 md:col-span-5 flex items-center gap-4 overflow-hidden pl-6 relative">
+                        <div
+                          onClick={(e) =>
+                            toggleSelection(e, file._id, "File", file.fileName!)
+                          }
+                          className="absolute left-0 w-4 h-4 rounded-full border-2 border-gray-400 flex items-center justify-center hover:border-blue-400 transition-colors"
+                          style={{
+                            background: selectedItems.some(
+                              (item) => item.id === file._id,
+                            )
+                              ? "#3b82f6"
+                              : "transparent",
+                            borderColor: selectedItems.some(
+                              (item) => item.id === file._id,
+                            )
+                              ? "#3b82f6"
+                              : "",
+                          }}
+                        >
+                          {selectedItems.some(
+                            (item) => item.id === file._id,
+                          ) && (
+                            <CheckCircle2 size={10} className="text-white" />
+                          )}
+                        </div>
+
+                        <div className="w-10 h-10 flex items-center justify-center bg-dark-500/50 rounded-xl shrink-0 overflow-hidden relative">
                           {file.type.startsWith("image/") ? (
                             <Image
                               src={file.databaseLocations.secure_url}
@@ -828,9 +964,21 @@ export default function DisplayFilesAndFolder({
                           ) : (
                             <RiFileVideoFill className="text-blue-500 text-lg" />
                           )}
+                          {file.isPublic && currentFolderId !== "trash" && (
+                            <div className="absolute -top-1 -right-1 bg-green-500 rounded-full p-0.5 z-10">
+                              <Globe size={8} className="text-white" />
+                            </div>
+                          )}
                         </div>
-                        <p className="text-sm font-medium text-gray-200 truncate">
+                        <p className="text-sm font-medium text-gray-200 truncate flex items-center gap-2">
                           {file.fileName}
+                          {file.isFavourite && (
+                            <Star
+                              size={12}
+                              className="text-yellow-500"
+                              fill="currentColor"
+                            />
+                          )}
                         </p>
                       </div>
                       <p className="col-span-3 md:col-span-2 text-xs font-medium text-gray-400">
@@ -848,14 +996,13 @@ export default function DisplayFilesAndFolder({
               </ContextMenuTrigger>
               <ContextMenuContent className="glass-panel border-white/10 text-white px-2">
                 {currentFolderId === "trash" ? (
-                  // 🗑️ TRASH VIEW FILE OPTIONS
                   <>
                     <ContextMenuItem
                       onClick={(e) => {
                         e.stopPropagation();
                         handleRestore(file._id, "File");
                       }}
-                      className="text-green-400 hover:bg-green-500/20 focus:bg-green-500/20 rounded-xl cursor-pointer py-2 px-3 font-medium"
+                      className="text-green-400 hover:bg-green-500/20 focus:bg-green-500/20 rounded-xl cursor-pointer py-2.5 px-3 font-medium"
                     >
                       Restore File
                     </ContextMenuItem>
@@ -869,17 +1016,16 @@ export default function DisplayFilesAndFolder({
                           file.fileName || "Unknown",
                         );
                       }}
-                      className="text-red-500 hover:bg-red-500/20 focus:bg-red-500/20 rounded-xl cursor-pointer py-2 px-3 font-bold"
+                      className="text-red-500 hover:bg-red-500/20 focus:bg-red-500/20 rounded-xl cursor-pointer py-2.5 px-3 font-bold"
                     >
                       Delete Permanently
                     </ContextMenuItem>
                   </>
                 ) : (
-                  // 📄 NORMAL DRIVE FILE OPTIONS
                   <>
                     <ContextMenuItem
                       onClick={() => handleActionClick(file)}
-                      className="hover:bg-blue-500/20 focus:bg-blue-500/20 rounded-xl cursor-pointer py-2 px-3"
+                      className="hover:bg-blue-500/20 focus:bg-blue-500/20 rounded-xl cursor-pointer py-2.5 px-3"
                     >
                       Open File
                     </ContextMenuItem>
@@ -892,7 +1038,7 @@ export default function DisplayFilesAndFolder({
                           file.isFavourite ?? false,
                         );
                       }}
-                      className="hover:bg-blue-500/20 focus:bg-blue-500/20 rounded-xl cursor-pointer py-2 px-3 flex items-center justify-between"
+                      className="hover:bg-blue-500/20 focus:bg-blue-500/20 rounded-xl cursor-pointer py-2.5 px-3 flex items-center justify-between"
                     >
                       {file.isFavourite
                         ? "Remove from Favourites"
@@ -915,26 +1061,56 @@ export default function DisplayFilesAndFolder({
                           file.fileName || "Unknown",
                         )
                       }
-                      className="hover:bg-dark-400 focus:bg-dark-400 rounded-xl cursor-pointer py-2 px-3"
+                      className="hover:bg-dark-400 focus:bg-dark-400 rounded-xl cursor-pointer py-2.5 px-3"
                     >
                       Rename
                     </ContextMenuItem>
-                    <ContextMenuItem
-                      onClick={() =>
-                        handleShareClick(file._id, file.fileName!, "file")
-                      }
-                      className="hover:bg-blue-500/20 focus:bg-blue-500/20 rounded-xl cursor-pointer py-2 px-3 flex items-center gap-2"
-                    >
-                      <Share2 size={16} className="text-blue-400" />
-                      Share Link
-                    </ContextMenuItem>
+
+                    {!file.isPublic ? (
+                      <ContextMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleShareClick(file._id, file.fileName!, "file");
+                        }}
+                        className="hover:bg-blue-500/20 focus:bg-blue-500/20 rounded-xl cursor-pointer py-2.5 px-3 flex items-center gap-2"
+                      >
+                        <Share2 size={16} className="text-blue-400" />
+                        Share Link
+                      </ContextMenuItem>
+                    ) : (
+                      <>
+                        <ContextMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const url = `${window.location.origin}/share/${file.shareToken}?type=file`;
+                            navigator.clipboard.writeText(url);
+                          }}
+                          className="hover:bg-green-500/20 focus:bg-green-500/20 rounded-xl cursor-pointer py-2.5 px-3 flex items-center gap-2"
+                        >
+                          <LinkIcon size={16} className="text-green-400" />
+                          Copy Shared Link
+                        </ContextMenuItem>
+
+                        <ContextMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRevoke(file._id, "file");
+                          }}
+                          className="text-red-400 hover:bg-red-500/20 focus:bg-red-500/20 rounded-xl cursor-pointer py-2.5 px-3 flex items-center gap-2 font-medium"
+                        >
+                          <XCircle size={16} />
+                          Stop Sharing
+                        </ContextMenuItem>
+                      </>
+                    )}
+
                     <ContextMenuSeparator className="bg-white/10" />
                     <ContextMenuItem
                       onClick={(e) => {
                         e.stopPropagation();
                         handleMoveToTrash(file._id, "File");
                       }}
-                      className="text-red-400 hover:bg-red-500/20 focus:bg-red-500/20 rounded-xl cursor-pointer py-2 px-3 font-medium"
+                      className="text-red-400 hover:bg-red-500/20 focus:bg-red-500/20 rounded-xl cursor-pointer py-2.5 px-3 font-medium"
                     >
                       Move to Trash
                     </ContextMenuItem>
@@ -994,7 +1170,7 @@ export default function DisplayFilesAndFolder({
         isLoading={isLoading}
       />
 
-      {/* Sabhi modals ke niche ye add karo */}
+      {/* 🚀 SHARE MODAL */}
       {isShareModalOpen && shareItemData && (
         <ShareModal
           itemId={shareItemData.id}
@@ -1010,7 +1186,6 @@ export default function DisplayFilesAndFolder({
       {/* 🚀 FLOATING ACTION BAR FOR MULTI-SELECT */}
       {selectedItems.length > 0 && (
         <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 sm:gap-4 px-4 sm:px-6 py-3 rounded-full bg-dark-200/90 backdrop-blur-xl border border-white/10 shadow-2xl shadow-black/50 text-white animate-in slide-in-from-bottom-10 fade-in duration-300">
-          {/* Selected Count */}
           <div className="flex items-center gap-2 mr-2 sm:mr-4">
             <div className="flex items-center justify-center bg-blue-500 text-white rounded-full w-6 h-6 text-xs font-bold shadow-sm shadow-blue-500/30">
               {selectedItems.length}
@@ -1022,10 +1197,8 @@ export default function DisplayFilesAndFolder({
 
           <div className="w-px h-6 bg-white/10 mx-1 sm:mx-2"></div>
 
-          {/* Action Buttons based on current view (Trash vs Normal Drive) */}
           {currentFolderId === "trash" ? (
             <>
-              {/* RESTORE BUTTON */}
               <button
                 onClick={() => handleBulkTrashStatus(false)}
                 className="flex items-center gap-2 px-3 py-1.5 hover:bg-green-500/20 rounded-full text-green-400 transition-colors"
@@ -1037,7 +1210,6 @@ export default function DisplayFilesAndFolder({
                 </span>
               </button>
 
-              {/* DELETE PERMANENTLY BUTTON */}
               <button
                 onClick={() => setIsBulkDeleteDialogOpen(true)}
                 className="flex items-center gap-2 px-3 py-1.5 hover:bg-red-500/20 rounded-full text-red-400 transition-colors"
@@ -1051,7 +1223,6 @@ export default function DisplayFilesAndFolder({
             </>
           ) : (
             <>
-              {/* CUT BUTTON */}
               <button
                 onClick={() => handleCutCopy("cut")}
                 className="flex items-center gap-2 px-3 py-1.5 hover:bg-blue-500/20 rounded-full text-blue-400 transition-colors"
@@ -1061,7 +1232,6 @@ export default function DisplayFilesAndFolder({
                 <span className="text-sm font-medium hidden sm:block">Cut</span>
               </button>
 
-              {/* COPY BUTTON */}
               <button
                 onClick={() => handleCutCopy("copy")}
                 className="flex items-center gap-2 px-3 py-1.5 hover:bg-green-500/20 rounded-full text-green-400 transition-colors"
@@ -1073,9 +1243,8 @@ export default function DisplayFilesAndFolder({
                 </span>
               </button>
 
-              {/* MOVE TO TRASH BUTTON (Normal Drive) */}
               <button
-                onClick={() => handleBulkTrashStatus(true)} // Abhi banayenge
+                onClick={() => handleBulkTrashStatus(true)}
                 className="flex items-center gap-2 px-3 py-1.5 hover:bg-red-500/20 rounded-full text-red-400 transition-colors"
                 title="Move to Trash"
               >
@@ -1089,7 +1258,6 @@ export default function DisplayFilesAndFolder({
 
           <div className="w-px h-6 bg-white/10 mx-1 sm:mx-2"></div>
 
-          {/* CLEAR SELECTION BUTTON */}
           <button
             onClick={() => setSelectedItems([])}
             className="p-2 hover:bg-white/10 rounded-full text-gray-400 hover:text-white transition-colors"
