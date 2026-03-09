@@ -22,7 +22,10 @@ import {
   Image as ImageIcon,
   FileText,
   AlertTriangle,
+  CheckCircle2,
+  Loader2,
 } from "lucide-react";
+import toast from "react-hot-toast";
 
 interface UploadFileModalProps {
   isOpen: boolean;
@@ -38,7 +41,12 @@ export default function UploadFileModal({
   const router = useRouter();
   const { user } = useUser();
   const userMongoId = user?.publicMetadata?.userMongoId as string | undefined;
-  const [isLoading, setIsLoading] = useState(false);
+
+  // 🚀 New States for Step-by-Step Progress
+  const [uploadStep, setUploadStep] = useState<"idle" | "uploading" | "saving">(
+    "idle",
+  );
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | ArrayBuffer | null>(
@@ -50,6 +58,9 @@ export default function UploadFileModal({
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setStorageError(null);
+    setUploadProgress(0);
+    setUploadStep("idle");
+
     if (e.target.files && e.target.files.length > 0) {
       const selectedFile = e.target.files[0];
       setFile(selectedFile);
@@ -95,24 +106,64 @@ export default function UploadFileModal({
   const handleFileUpload = async () => {
     if (!file || !userMongoId || storageError) return;
 
-    setIsLoading(true);
-    const formData = new FormData();
-    formData.append("userId", userMongoId);
-    formData.append("file", file);
-    formData.append("currentFolderId", currentFolderId || "null");
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+    const uploadPreset = "megadrive_unsigned"; // Apni step 1 wali preset
+
+    if (!cloudName) {
+      toast.error("Cloudinary config missing");
+      return;
+    }
 
     try {
-      const response = await axios.post("/api/file/create-file", formData);
-      if (response?.status === 201) {
-        handleCancel(); // Reset and close
+      // ---------------------------------------------------------
+      // ☁️ STEP 1: DIRECT UPLOAD TO CLOUDINARY
+      // ---------------------------------------------------------
+      setUploadStep("uploading"); // UI update for Step 1
+      setUploadProgress(0);
+
+      const cloudFormData = new FormData();
+      cloudFormData.append("file", file);
+      cloudFormData.append("upload_preset", uploadPreset);
+
+      const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`;
+
+      const cloudResponse = await axios.post(cloudinaryUrl, cloudFormData, {
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round(
+            (progressEvent.loaded * 100) / (progressEvent.total || file.size),
+          );
+          setUploadProgress(percentCompleted);
+        },
+      });
+
+      // ---------------------------------------------------------
+      // 💾 STEP 2: SAVE DATA TO OUR MONGODB
+      // ---------------------------------------------------------
+      setUploadStep("saving"); // UI update for Step 2
+
+      const dbPayload = {
+        userId: userMongoId,
+        fileName: file.name,
+        fileType: file.type,
+        fileSize: file.size,
+        currentFolderId: currentFolderId || "null",
+        cloudinaryData: cloudResponse.data,
+      };
+
+      const dbResponse = await axios.post("/api/file/save-record", dbPayload);
+
+      if (dbResponse?.status === 201) {
+        toast.success("File uploaded successfully!");
+        handleCancel();
         window.dispatchEvent(new Event("drive-item-changed"));
       }
     } catch (error: any) {
-      console.log("ERROR: File Not Uploaded", error);
-      // Agar backend se error aaye (Limit vagerah ka)
-      setStorageError(error?.response?.data?.error || "Upload failed");
+      console.log("ERROR: File Upload Failed", error);
+      toast.error("Upload failed. Please try again.");
+      setStorageError("Upload failed");
     } finally {
-      setIsLoading(false);
+      setUploadStep("idle");
+      setUploadProgress(0);
     }
   };
 
@@ -121,6 +172,8 @@ export default function UploadFileModal({
     setPreviewUrl(null);
     setFileType("");
     setStorageError(null);
+    setUploadStep("idle");
+    setUploadProgress(0);
     onClose();
   };
 
@@ -135,7 +188,13 @@ export default function UploadFileModal({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && handleCancel()}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        // Prevent closing modal if upload is in progress
+        if (!open && uploadStep === "idle") handleCancel();
+      }}
+    >
       <DialogContent className="glass-panel sm:max-w-md p-0 overflow-hidden border-white/10">
         <DialogHeader className="px-6 pt-6 pb-2">
           <DialogTitle className="flex items-center gap-3 text-xl font-bold text-white">
@@ -169,16 +228,10 @@ export default function UploadFileModal({
             </label>
           ) : (
             <div className="flex flex-col gap-4">
-              
-              {/* 🛠️ FIXED UI: Used CSS Grid to ensure strict boundaries for truncation */}
               <div className="grid grid-cols-[auto_1fr_auto] gap-4 items-center p-3 bg-dark-100/50 border border-white/5 rounded-2xl relative shadow-inner">
-                
-                {/* Icon (Left) */}
                 <div className="flex items-center justify-center w-12 h-12 bg-white/5 rounded-xl shrink-0">
                   {renderFileIcon()}
                 </div>
-                
-                {/* Text Info (Middle) - min-w-0 is critical here to prevent overflowing */}
                 <div className="min-w-0 flex flex-col justify-center">
                   <p
                     className="text-sm font-medium text-white truncate"
@@ -190,21 +243,16 @@ export default function UploadFileModal({
                     {(file.size / 1024 / 1024).toFixed(2)} MB
                   </p>
                 </div>
-                
-                {/* Action Button (Right) */}
                 <button
-                  onClick={() => {
-                    setFile(null);
-                    setPreviewUrl(null);
-                    setStorageError(null);
-                  }}
-                  className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-full transition-colors shrink-0"
+                  onClick={handleCancel}
+                  disabled={uploadStep !== "idle"} // Disable cancel if uploading
+                  className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors shrink-0 ${uploadStep !== "idle" ? "text-gray-600 cursor-not-allowed" : "text-gray-400 hover:text-red-400 hover:bg-red-500/10"}`}
                 >
                   <X size={16} />
                 </button>
               </div>
 
-              {/* ⚠️ FRONTEND ERROR DISPLAY */}
+              {/* FRONTEND ERROR DISPLAY */}
               {storageError && (
                 <div className="flex items-start gap-3 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-medium animate-in fade-in zoom-in">
                   <AlertTriangle size={16} className="shrink-0 mt-0.5" />
@@ -212,9 +260,9 @@ export default function UploadFileModal({
                 </div>
               )}
 
-              {/* Media Preview hide kar do agar error hai toh achha lagega */}
-              {previewUrl && !storageError && (
-                <div className="w-full bg-black/50 rounded-2xl overflow-hidden border border-white/5 flex items-center justify-center max-h-48 backdrop-blur-sm">
+              {/* Modal Media Preview (Hidden during upload for cleaner UI) */}
+              {previewUrl && !storageError && uploadStep === "idle" && (
+                <div className="w-full bg-black/50 rounded-2xl overflow-hidden border border-white/5 flex items-center justify-center max-h-48 backdrop-blur-sm animate-in fade-in zoom-in">
                   {fileType.startsWith("image/") && (
                     <Image
                       src={previewUrl as string}
@@ -240,6 +288,57 @@ export default function UploadFileModal({
                   )}
                 </div>
               )}
+
+              {/* 🚀 STEP-BY-STEP PROGRESS BAR IN MODAL */}
+              {uploadStep !== "idle" && (
+                <div className="flex flex-col gap-3 p-4 bg-dark-400/50 border border-white/5 rounded-2xl animate-in fade-in slide-in-from-bottom-2">
+                  {/* Step 1: Cloud Upload */}
+                  <div
+                    className={`flex items-center justify-between text-xs font-medium transition-all ${uploadStep === "saving" ? "text-gray-500" : "text-blue-400"}`}
+                  >
+                    <div className="flex items-center gap-2">
+                      {uploadStep === "saving" ? (
+                        <CheckCircle2 size={14} className="text-green-500" />
+                      ) : (
+                        <Loader2 size={14} className="animate-spin" />
+                      )}
+                      <span>Step 1: Uploading to Cloud</span>
+                    </div>
+                    <span>
+                      {uploadStep === "saving" ? "100%" : `${uploadProgress}%`}
+                    </span>
+                  </div>
+
+                  <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-300 ${uploadStep === "saving" ? "bg-green-500" : "bg-blue-500 shadow-[0_0_10px] shadow-blue-500/50"}`}
+                      style={{
+                        width:
+                          uploadStep === "saving"
+                            ? "100%"
+                            : `${uploadProgress}%`,
+                      }}
+                    ></div>
+                  </div>
+
+                  {/* Step 2: Database Save */}
+                  <div
+                    className={`flex items-center justify-between text-xs font-medium transition-all mt-1 ${uploadStep === "saving" ? "text-blue-400" : "text-gray-600"}`}
+                  >
+                    <div className="flex items-center gap-2">
+                      {uploadStep === "saving" ? (
+                        <Loader2 size={14} className="animate-spin" />
+                      ) : (
+                        <div className="w-3.5 h-3.5 border-2 border-gray-600 rounded-full" />
+                      )}
+                      <span>Step 2: Saving to MDrive</span>
+                    </div>
+                    <span>
+                      {uploadStep === "saving" ? "Processing..." : "Waiting"}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -248,6 +347,7 @@ export default function UploadFileModal({
           <Button
             onClick={handleCancel}
             variant="ghost"
+            disabled={uploadStep !== "idle"}
             className="rounded-full text-gray-300 hover:text-white hover:bg-white/10 transition-colors"
           >
             Cancel
@@ -259,14 +359,18 @@ export default function UploadFileModal({
                 : "bg-blue-600 hover:bg-blue-500 text-white shadow-blue-500/20"
             }`}
             onClick={handleFileUpload}
-            disabled={isLoading || !file || !!storageError} // 🛑 ERROR PE DISABLE
+            disabled={uploadStep !== "idle" || !file || !!storageError}
           >
-            {isLoading && <CloudUpload className="animate-bounce w-4 h-4" />}
-            {isLoading
-              ? "Uploading..."
-              : storageError
-                ? "Storage Full"
-                : "Upload File"}
+            {uploadStep !== "idle" && (
+              <CloudUpload className="animate-bounce w-4 h-4" />
+            )}
+            {uploadStep === "uploading"
+              ? `Uploading...`
+              : uploadStep === "saving"
+                ? `Saving...`
+                : storageError
+                  ? "Storage Full"
+                  : "Upload File"}
           </Button>
         </DialogFooter>
       </DialogContent>

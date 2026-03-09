@@ -1,6 +1,7 @@
 import dbConnect from "@/lib/dbConnect";
 import File from "@/models/file.modal";
 import Folder from "@/models/folder.modal";
+import User from "@/models/user.modal"; // 🚀 Import User Model
 import cloudinary from "@/lib/cloudinary";
 
 export async function POST(req: Request) {
@@ -38,6 +39,9 @@ export async function POST(req: Request) {
       ]
     });
 
+    // 🚀 CALCULATE TOTAL SIZE TO FREE UP (Yeh miss ho gaya tha pehle)
+    const totalSizeFreed = filesToDelete.reduce((total, file) => total + (file.fileSize || 0), 0);
+
     // Delete from Cloudinary
     const cloudinaryPromises = filesToDelete.map(async (file) => {
       const publicId = file.databaseLocations?.public_id;
@@ -72,6 +76,14 @@ export async function POST(req: Request) {
         } 
       }
     );
+
+    // 🚀 DECREMENT USER STORAGE (Puraani storage ko wapas khali karo)
+    if (totalSizeFreed > 0) {
+      await User.findByIdAndUpdate(userId, {
+        $inc: { storageUsed: -Math.abs(totalSizeFreed) } // Minus lagaya hai taaki storage kam ho
+      });
+      console.log(`Empty Trash: Freed up ${totalSizeFreed} bytes for user ${userId}`);
+    }
 
     return new Response(JSON.stringify({ message: "Trash emptied successfully" }), { status: 200 });
 

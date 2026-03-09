@@ -109,7 +109,7 @@ export default function Sidebar() {
       </button>
 
       {/* Brand Logo Section */}
-      <div className="p-6">
+      <div className="py-3">
         <Logo isCollapsed={isCollapsed} />
       </div>
 

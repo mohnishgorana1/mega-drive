@@ -12,12 +12,14 @@ import { AlertTriangle, Trash2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useUser } from "@clerk/nextjs";
 import axios from "axios";
+import toast from "react-hot-toast"; // 🚀 Import Toast
 
 interface EmptyTrashDialogProps {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
   onClose: () => void;
 }
+
 function EmptyTrashDialog({
   isOpen,
   setIsOpen,
@@ -31,21 +33,29 @@ function EmptyTrashDialog({
     if (!userMongoId) return;
 
     setIsLoading(true);
-    try {
-      const response = await axios.post("/api/items/empty-trash", {
-        userId: userMongoId,
-      });
 
-      if (response.status === 200) {
-        setIsOpen(false);
-        // This global event tells DisplayFilesAndFolder to refresh instantly!
-        window.dispatchEvent(new Event("drive-item-changed"));
+    // 🚀 Wrap the API call in toast.promise
+    toast.promise(
+      axios.post("/api/items/empty-trash", { userId: userMongoId }),
+      {
+        loading: "Emptying trash...",
+        success: <b>Trash emptied successfully!</b>,
+        error: <b>Failed to empty trash.</b>,
       }
-    } catch (error) {
-      console.error("Failed to empty trash", error);
-    } finally {
-      setIsLoading(false);
-    }
+    )
+      .then((response) => {
+        if (response.status === 200) {
+          setIsOpen(false);
+          // 🔥 Global event tells DisplayFilesAndFolder and Sidebar to refresh!
+          window.dispatchEvent(new Event("drive-item-changed"));
+        }
+      })
+      .catch((error) => {
+        console.error("Failed to empty trash", error);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   };
 
   return (
