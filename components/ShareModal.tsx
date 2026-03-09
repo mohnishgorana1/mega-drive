@@ -1,15 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Copy, Check, X, Share2, Globe, Folder, FileText, ShieldAlert, Info } from "lucide-react";
 import axios from "axios";
+import toast from "react-hot-toast"; // 🚀 Import Toast
 
 interface ShareModalProps {
   itemId: string;
   itemName: string;
   itemType: "file" | "folder";
-  isAlreadyPublic?: boolean; // 👈 Dashboard se pass kar sakte ho agar state hai toh
+  isAlreadyPublic?: boolean; 
   onClose: () => void;
 }
 
@@ -24,24 +25,35 @@ export default function ShareModal({
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // 🚀 Logic: Agar pehle se public hai, toh hum fetch ya generate logic handle kar sakte hain
-  // Abhi ke liye hum button click par hi token mangwa rahe hain
-
   const handleShare = async () => {
     setLoading(true);
-    try {
-      const res = await axios.post("/api/items/share", { itemId, itemType });
-      setShareUrl(res.data.shareUrl);
-    } catch (err) {
-      console.error("Sharing failed", err);
-    } finally {
-      setLoading(false);
-    }
+    
+    // 🚀 Wrapped in toast.promise for smooth UX
+    toast.promise(
+      axios.post("/api/items/share", { itemId, itemType }),
+      {
+        loading: "Generating public link...",
+        success: <b>Link generated successfully!</b>,
+        error: <b>Failed to generate link.</b>,
+      }
+    )
+      .then((res) => {
+        setShareUrl(res.data.shareUrl);
+        // 🔥 Trigger event to immediately show the Globe 🌍 badge on the dashboard
+        window.dispatchEvent(new Event("drive-item-changed"));
+      })
+      .catch((err) => {
+        console.error("Sharing failed", err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(shareUrl);
     setCopied(true);
+    toast.success("Link copied to clipboard!"); // 🚀 Success Toast
     setTimeout(() => setCopied(false), 2000);
   };
 

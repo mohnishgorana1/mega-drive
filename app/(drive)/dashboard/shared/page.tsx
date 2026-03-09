@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { formatFileSize, timeAgo } from "@/lib/utils";
 import Link from "next/link";
+import toast from "react-hot-toast"; // 🚀 Import Toast
 
 export default function SharedItemsPage() {
   const { user } = useUser();
@@ -44,19 +45,32 @@ export default function SharedItemsPage() {
   };
 
   const handleRevoke = async (itemId: string, itemType: string) => {
-    try {
-      await axios.post("/api/items/revoke-access", { itemId, itemType });
-      setItems((prev) => prev.filter((item) => item._id !== itemId));
-      // Optional: Success toast yahan dalo
-    } catch (err) {
-      console.error("Failed to revoke access");
-    }
+    // 🚀 Wrapped in toast.promise
+    toast
+      .promise(axios.post("/api/items/revoke-access", { itemId, itemType }), {
+        loading: "Making item private...",
+        success: <b>Access revoked successfully!</b>,
+        error: <b>Failed to revoke access.</b>,
+      })
+      .then(() => {
+        // UI se turant hata do
+        setItems((prev) => prev.filter((item) => item._id !== itemId));
+        // Sidebar wagaira ko update karne ke liye event fire kar do
+        window.dispatchEvent(new Event("drive-item-changed"));
+      })
+      .catch((err) => {
+        console.error("Failed to revoke access", err);
+      });
   };
 
   const copyLink = (token: string, type: string, id: string) => {
     const url = `${window.location.origin}/share/${token}?type=${type}`;
     navigator.clipboard.writeText(url);
     setCopiedId(id);
+
+    // 🚀 Success Toast for Copy
+    toast.success("Shared link copied!");
+
     setTimeout(() => setCopiedId(""), 2000);
   };
 

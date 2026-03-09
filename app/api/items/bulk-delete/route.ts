@@ -1,6 +1,8 @@
+// app/api/items/bulk-delete/route.ts
 import dbConnect from "@/lib/dbConnect";
 import File from "@/models/file.modal";
 import Folder from "@/models/folder.modal";
+import User from "@/models/user.modal"; 
 import cloudinary from "@/lib/cloudinary";
 
 export async function POST(req: Request) {
@@ -38,6 +40,9 @@ export async function POST(req: Request) {
       ]
     });
 
+    // 🚀 CALCULATE TOTAL SIZE TO FREE UP
+    const totalSizeFreed = filesToDelete.reduce((total, file) => total + (file.fileSize || 0), 0);
+
     // 3. Delete from Cloudinary
     const cloudinaryPromises = filesToDelete.map(async (file) => {
       const publicId = file.databaseLocations?.public_id;
@@ -61,6 +66,14 @@ export async function POST(req: Request) {
       { userId },
       { $pull: { files: { $in: topLevelFileIds }, folders: { $in: topLevelFolderIds } } }
     );
+
+    // 🚀 6. DECREMENT USER STORAGE
+    if (totalSizeFreed > 0) {
+      await User.findByIdAndUpdate(userId, {
+        $inc: { storageUsed: -Math.abs(totalSizeFreed) } // - (Minus) lagaya hai taaki storage kam ho
+      });
+      console.log(`Freed up ${totalSizeFreed} bytes for user ${userId}`);
+    }
 
     return new Response(JSON.stringify({ message: "Bulk delete successful" }), { status: 200 });
   } catch (error) {

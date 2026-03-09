@@ -6,16 +6,16 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { cn } from "@/lib/utils";
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
-
+import { Toaster } from "react-hot-toast";
 const fontSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  weight: ['300', '400', '500', '600', '700'],
-  variable: '--font-sans'
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-sans",
 });
 
 export const metadata: Metadata = {
   title: "MDrive",
-  description: "Simplify Your Storage."
+  description: "Simplify Your Storage.",
 };
 
 export default function RootLayout({
@@ -33,18 +33,25 @@ export default function RootLayout({
           colorInputBackground: "rgba(255, 255, 255, 0.05)",
           colorInputText: "#ffffff",
           borderRadius: "1rem", // 16px curve for Clerk inputs
-          fontSize: "16px"
+          fontSize: "16px",
         },
-      }}>
+      }}
+    >
       <html lang="en">
         {/* Changed background to dark-100 (pure black) for maximum contrast with glass panels */}
-        <body className={cn('min-h-screen bg-dark-100 font-sans antialiased selection:bg-blue-500/30 text-white', fontSans.className)}>
+        <body
+          className={cn(
+            "min-h-screen bg-dark-100 font-sans antialiased selection:bg-blue-500/30 text-white",
+            fontSans.className,
+          )}
+        >
           <ThemeProvider
             attribute="class"
             defaultTheme="dark" // Forced to dark as requested
             enableSystem={false}
           >
-              {children}
+            <Toaster />
+            {children}
           </ThemeProvider>
         </body>
       </html>

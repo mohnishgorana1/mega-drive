@@ -4,8 +4,8 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import { Button } from './ui/button';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
-import { AlertTriangle, Trash2 } from 'lucide-react'; // 🔥 Added icons
-
+import { AlertTriangle, Trash2 } from 'lucide-react';
+import toast from 'react-hot-toast'; // 🚀 Import Toast
 
 interface DeleteFileOrFolderProps {
     itemId: string;
@@ -22,31 +22,39 @@ function DeleteFileOrFolder({ itemId, itemType, itemName, isOpen, onClose, setFi
     const [isLoading, setIsLoading] = useState(false)
 
     const handleDelete = async () => {
-        setIsLoading(true)
-        try {
-            let response;
-            if (itemType === "Folder") {
-                response = await axios.post("/api/folder/delete-folder", {
-                    folderIdToDelete: itemId,
-                })
-                if (response.status === 201) {
-                    setFolders((prevFolders: any) => prevFolders.filter((folder: any) => folder._id !== itemId))
-                }
+        setIsLoading(true);
 
-            } else if (itemType === "File") {
-                response = await axios.post("/api/file/delete-file", {
-                    fileIdToDelete: itemId,
-                })
-                if (response.status === 201) {
-                    setFiles((prevFiles: any) => prevFiles.filter((file: any) => file._id !== itemId))
+        // 🚀 1. Decide which API to call based on itemType
+        const deleteRequest = itemType === "Folder"
+            ? axios.post("/api/folder/delete-folder", { folderIdToDelete: itemId })
+            : axios.post("/api/file/delete-file", { fileIdToDelete: itemId });
+
+        // 🚀 2. Wrap the API call in toast.promise
+        toast.promise(deleteRequest, {
+            loading: `Deleting ${itemType.toLowerCase()}...`,
+            success: `${itemType} deleted permanently!`,
+            error: `Failed to delete ${itemType.toLowerCase()}.`,
+        })
+        .then((response) => {
+            // 🚀 3. Update the UI state upon success
+            if (response.status === 201 || response.status === 200) {
+                if (itemType === "Folder") {
+                    setFolders((prevFolders: any) => prevFolders.filter((folder: any) => folder._id !== itemId));
+                } else if (itemType === "File") {
+                    setFiles((prevFiles: any) => prevFiles.filter((file: any) => file._id !== itemId));
                 }
+                
+                // 🔥 TRIGGER CLOUD PULSE REFRESH (Storage minus ho jayegi)
+                window.dispatchEvent(new Event("drive-item-changed"));
+                onClose();
             }
-            onClose();
-        } catch (error) {
-            console.log(`Error Deleting ${itemType}`, error);
-        } finally {
-            setIsLoading(false)
-        }
+        })
+        .catch((error) => {
+            console.error(`Error Deleting ${itemType}`, error);
+        })
+        .finally(() => {
+            setIsLoading(false);
+        });
     }
 
     return (
@@ -66,7 +74,7 @@ function DeleteFileOrFolder({ itemId, itemType, itemName, isOpen, onClose, setFi
                     <DialogDescription className='mt-3 flex flex-col gap-2'>
                         <span className='text-[15px] text-gray-300'>
                             Are you sure you want to permanently delete <br/>
-                            <span className='text-white font-bold break-all px-1'>"{itemName}"</span>?
+                            <span className='text-white font-bold break-all px-1'>{`"${itemName}"`}</span>?
                         </span>
                         <span className='text-sm font-medium text-red-400 mt-2 bg-red-500/10 py-1.5 px-3 rounded-lg inline-block w-fit mx-auto'>
                             This action cannot be undone.
@@ -76,7 +84,7 @@ function DeleteFileOrFolder({ itemId, itemType, itemName, isOpen, onClose, setFi
 
                 <DialogFooter className='px-6 py-5 bg-dark-100/40 border-t border-white/5 flex flex-row justify-center sm:justify-center gap-3'>
                     <DialogClose asChild>
-                        <Button variant="ghost" className='w-full sm:w-auto rounded-full text-gray-300 hover:text-white hover:bg-white/10 transition-colors px-6'>
+                        <Button variant="ghost" onClick={onClose} className='w-full sm:w-auto rounded-full text-gray-300 hover:text-white hover:bg-white/10 transition-colors px-6'>
                             Cancel
                         </Button>
                     </DialogClose>

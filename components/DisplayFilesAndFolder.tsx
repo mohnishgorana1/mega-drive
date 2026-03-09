@@ -58,6 +58,7 @@ import { useUser } from "@clerk/nextjs";
 import { Button } from "./ui/button";
 import EmptyTrashDialog from "./EmptyTrashDialog";
 import BulkDeleteConfirmationDialog from "./BulkDeleteConfirmationDialog";
+import toast from "react-hot-toast"; 
 
 interface DisplayFilesAndFolderProps {
   currentFolderId: string | null;
@@ -139,18 +140,25 @@ export default function DisplayFilesAndFolder({
     itemType: "File" | "Folder",
     currentStatus: boolean = false,
   ) => {
-    try {
-      const response = await axios.post("/api/items/toggle-favourite", {
+    const actionWord = currentStatus ? "Removing from" : "Adding to";
+    const successWord = currentStatus ? "Removed from" : "Added to";
+
+    toast.promise(
+      axios.post("/api/items/toggle-favourite", {
         itemId,
         itemType,
         isFavourite: currentStatus,
-      });
+      }),
+      {
+        loading: `${actionWord} favourites...`,
+        success: <b>{successWord} favourites!</b>,
+        error: <b>Failed to update favourites.</b>,
+      }
+    ).then((response) => {
       if (response.status === 200) {
         window.dispatchEvent(new Event("drive-item-changed"));
       }
-    } catch (error) {
-      console.error("Failed to toggle favourite", error);
-    }
+    }).catch((error) => console.error("Failed to toggle favourite", error));
   };
 
   // --- 🗑️ TRASH HANDLERS ---
@@ -158,17 +166,20 @@ export default function DisplayFilesAndFolder({
     itemId: string,
     itemType: "File" | "Folder",
   ) => {
-    try {
-      const response = await axios.post("/api/items/toggle-trash", {
+    toast.promise(
+      axios.post("/api/items/toggle-trash", {
         itemId,
         itemType,
-        isTrashed: false, // Currently NOT trashed
-      });
-      if (response.status === 200)
-        window.dispatchEvent(new Event("drive-item-changed"));
-    } catch (error) {
-      console.error("Failed to move item to trash", error);
-    }
+        isTrashed: false,
+      }),
+      {
+        loading: "Moving to trash...",
+        success: <b>Moved to trash!</b>,
+        error: <b>Failed to move.</b>,
+      }
+    ).then((response) => {
+      if (response.status === 200) window.dispatchEvent(new Event("drive-item-changed"));
+    }).catch((error) => console.error("Failed to move item to trash", error));
   };
 
   const toggleSelection = (
@@ -191,17 +202,20 @@ export default function DisplayFilesAndFolder({
   };
 
   const handleRestore = async (itemId: string, itemType: "File" | "Folder") => {
-    try {
-      const response = await axios.post("/api/items/toggle-trash", {
+    toast.promise(
+      axios.post("/api/items/toggle-trash", {
         itemId,
         itemType,
-        isTrashed: true, // Currently IS trashed
-      });
-      if (response.status === 200)
-        window.dispatchEvent(new Event("drive-item-changed"));
-    } catch (error) {
-      console.error("Failed to restore item", error);
-    }
+        isTrashed: true,
+      }),
+      {
+        loading: "Restoring item...",
+        success: <b>Item restored!</b>,
+        error: <b>Failed to restore.</b>,
+      }
+    ).then((response) => {
+      if (response.status === 200) window.dispatchEvent(new Event("drive-item-changed"));
+    }).catch((error) => console.error("Failed to restore item", error));
   };
 
   const handleSort = (key: SortKey) => {
@@ -271,40 +285,46 @@ export default function DisplayFilesAndFolder({
   const handleBulkTrashStatus = async (isTrashed: boolean) => {
     if (selectedItems.length === 0) return;
     setIsLoading(true);
-    try {
-      const response = await axios.post("/api/items/bulk-trash", {
-        items: selectedItems,
-        isTrashed,
-      });
+    
+    const actionText = isTrashed ? "Moving to trash" : "Restoring";
+    const successText = isTrashed ? "Moved to trash!" : "Restored successfully!";
+
+    toast.promise(
+      axios.post("/api/items/bulk-trash", { items: selectedItems, isTrashed }),
+      {
+        loading: `${actionText}...`,
+        success: <b>{successText}</b>,
+        error: <b>Action failed.</b>,
+      }
+    ).then((response) => {
       if (response.status === 200) {
         setSelectedItems([]);
         window.dispatchEvent(new Event("drive-item-changed"));
       }
-    } catch (error) {
-      console.error("Bulk trash action failed", error);
-    } finally {
-      setIsLoading(false);
-    }
+    }).finally(() => setIsLoading(false));
   };
 
   const handleBulkDelete = async () => {
     if (selectedItems.length === 0 || !userMongoId) return;
     setIsLoading(true);
-    try {
-      const response = await axios.post("/api/items/bulk-delete", {
+
+    toast.promise(
+      axios.post("/api/items/bulk-delete", {
         items: selectedItems,
         userId: userMongoId,
-      });
+      }),
+      {
+        loading: "Deleting permanently...",
+        success: <b>Items deleted!</b>,
+        error: <b>Failed to delete.</b>,
+      }
+    ).then((response) => {
       if (response.status === 200) {
         setSelectedItems([]);
         setIsBulkDeleteDialogOpen(false);
         window.dispatchEvent(new Event("drive-item-changed"));
       }
-    } catch (error) {
-      console.error("Bulk delete failed", error);
-    } finally {
-      setIsLoading(false);
-    }
+    }).finally(() => setIsLoading(false));
   };
 
   const handleCutCopy = (action: "cut" | "copy") => {
@@ -318,16 +338,17 @@ export default function DisplayFilesAndFolder({
     setClipboard(clipboardData);
     sessionStorage.setItem("drive-clipboard", JSON.stringify(clipboardData));
 
+    // 🚀 Simple success toast for cut/copy
+    toast.success(`${selectedItems.length} items ${action === "cut" ? "cut" : "copied"} to clipboard!`);
     setSelectedItems([]);
   };
 
   const handlePaste = async () => {
     if (!clipboard || !userMongoId || clipboard.items.length === 0) return;
-
     setIsLoading(true);
 
-    try {
-      const response = await axios.post("/api/items/bulk-paste", {
+    toast.promise(
+      axios.post("/api/items/bulk-paste", {
         action: clipboard.action,
         items: clipboard.items,
         destinationFolderId:
@@ -335,18 +356,19 @@ export default function DisplayFilesAndFolder({
             ? null
             : currentFolderId,
         userId: userMongoId,
-      });
-
+      }),
+      {
+        loading: "Pasting items...",
+        success: <b>Items pasted successfully!</b>,
+        error: <b>Failed to paste items.</b>,
+      }
+    ).then((response) => {
       if (response.status === 200) {
         setClipboard(null);
         sessionStorage.removeItem("drive-clipboard");
         window.dispatchEvent(new Event("drive-item-changed"));
       }
-    } catch (error) {
-      console.error("Failed to paste items", error);
-    } finally {
-      setIsLoading(false);
-    }
+    }).finally(() => setIsLoading(false));
   };
 
   // --- SHARE HANDLERS ---
@@ -360,17 +382,16 @@ export default function DisplayFilesAndFolder({
   };
 
   const handleRevoke = async (itemId: string, itemType: string) => {
-    try {
-      const res = await axios.post("/api/items/revoke-access", {
-        itemId,
-        itemType,
-      });
-      if (res.status === 200) {
-        window.dispatchEvent(new Event("drive-item-changed"));
+    toast.promise(
+      axios.post("/api/items/revoke-access", { itemId, itemType }),
+      {
+        loading: "Revoking access...",
+        success: <b>Access revoked!</b>,
+        error: <b>Failed to revoke access.</b>,
       }
-    } catch (error) {
-      console.error("Revoke failed", error);
-    }
+    ).then((res) => {
+      if (res.status === 200) window.dispatchEvent(new Event("drive-item-changed"));
+    });
   };
 
   const fetchFilesAndFolders = async (showLoadingState = true) => {
@@ -490,6 +511,7 @@ export default function DisplayFilesAndFolder({
                     e.stopPropagation();
                     setClipboard(null);
                     sessionStorage.removeItem("drive-clipboard");
+                    toast.success("Clipboard cleared"); // 🚀 Added Toast
                   }}
                   className="px-3 h-full text-blue-400/70 hover:text-red-400 hover:bg-red-500/10 transition-colors flex items-center justify-center group"
                   title="Clear Clipboard"
@@ -807,6 +829,7 @@ export default function DisplayFilesAndFolder({
                             e.stopPropagation();
                             const url = `${window.location.origin}/share/${folder.shareToken}?type=folder`;
                             navigator.clipboard.writeText(url);
+                            toast.success("Shared link copied!"); // 🚀 Added Toast
                           }}
                           className="hover:bg-green-500/20 focus:bg-green-500/20 rounded-xl cursor-pointer py-2.5 px-3 flex items-center gap-2"
                         >
@@ -1084,6 +1107,7 @@ export default function DisplayFilesAndFolder({
                             e.stopPropagation();
                             const url = `${window.location.origin}/share/${file.shareToken}?type=file`;
                             navigator.clipboard.writeText(url);
+                            toast.success("Shared link copied!"); // 🚀 Added Toast
                           }}
                           className="hover:bg-green-500/20 focus:bg-green-500/20 rounded-xl cursor-pointer py-2.5 px-3 flex items-center gap-2"
                         >

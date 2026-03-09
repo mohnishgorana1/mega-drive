@@ -1,12 +1,10 @@
+// app/api/file/create-file/route.ts
 import { UploadFileToCloudinary } from "@/lib/actions/cloudinary.action";
 import dbConnect from "@/lib/dbConnect";
 import FileModal from "@/models/file.modal";
 import Folder from "@/models/folder.modal";
+import User from "@/models/user.modal";
 import mongoose from "mongoose";
-
-let NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME = String(
-  process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-);
 
 export async function POST(req: Request, res: Response) {
   await dbConnect();
@@ -24,21 +22,33 @@ export async function POST(req: Request, res: Response) {
       { status: 400 },
     );
   }
+
+  // 🛑 CHECK STORAGE LIMIT
+  const user = await User.findById(userId);
+  if (!user) {
+    return new Response(JSON.stringify({ error: "User not found" }), { status: 404 });
+  }
+
+  if (user.storageUsed + file.size > user.storageLimit) {
+    return new Response(
+      JSON.stringify({ error: "Storage limit exceeded. Please delete old files to free up space." }),
+      { status: 403 }
+    );
+  }
+  // -------------------------------------------------------------
+
   console.log("FORMDATA: ", userId, file, currentFolderId);
 
   let parentFolderId: mongoose.Types.ObjectId | null = null;
   let isFileAtHome: boolean = true;
 
-  if (
-    currentFolderId &&
-    currentFolderId !== "null" &&
-    currentFolderId !== "undefined"
-  ) {
+  if (currentFolderId && currentFolderId !== "null" && currentFolderId !== "undefined") {
     isFileAtHome = false;
     parentFolderId = new mongoose.Types.ObjectId(currentFolderId);
   }
 
   try {
+    // Ab file Cloudinary pe jayegi
     const data: any = await UploadFileToCloudinary(file, "megaDrive");
     console.log("data", data);
 
@@ -48,7 +58,6 @@ export async function POST(req: Request, res: Response) {
       "/upload/",
       "/upload/fl_attachment/",
     );
-   
 
     console.log("DOWNLOAD URL ", downloadUrl);
 
@@ -65,8 +74,7 @@ export async function POST(req: Request, res: Response) {
         download_url: downloadUrl,
       },
     });
-    console.log("File before saving", newFile);
-
+    
     await newFile.save();
 
     if (parentFolderId) {
@@ -75,11 +83,18 @@ export async function POST(req: Request, res: Response) {
         currentFolder.files.push(newFile._id);
         currentFolder.folderSize += file.size;
         await currentFolder.save();
-        console.log("File added to Folder:", currentFolder.name);
+        console.log("File added to Folder:", currentFolder.folderName);
       }
     }
 
-    console.log("File uploaded successfully", newFile);
+    // -------------------------------------------------------------
+    // 📈 UPDATE STORAGE: Increment the user's used space
+    // -------------------------------------------------------------
+    await User.findByIdAndUpdate(userId, {
+      $inc: { storageUsed: file.size }
+    });
+
+    console.log("File uploaded and User Storage Updated successfully");
 
     // Return success response
     return new Response(

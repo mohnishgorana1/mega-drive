@@ -15,6 +15,7 @@ import axios from "axios";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { FolderPlus } from "lucide-react";
+import toast from "react-hot-toast"; // 🚀 Import Toast
 
 interface CreateFolderModalProps {
   isOpen: boolean;
@@ -36,26 +37,33 @@ export default function CreateFolderModal({
   const handleCreateFolder = async () => {
     setIsLoading(true);
 
-    console.log("Creating folder with name:", folderName);
-    console.log("Current Folder ID:", currentFolderId);
+    const folderData = {
+      folderName: folderName.trim() || "Untitled Folder",
+      parentFolderId: currentFolderId,
+      userId: userMongoId,
+    };
 
-    try {
-      const response = await axios.post("/api/folder/create-folder", {
-        folderName: folderName || "Untitled Folder",
-        parentFolderId: currentFolderId,
-        userId: userMongoId,
-      });
-
-      if (response.status === 201) {
-        setFolderName("");
-        onClose(); 
-        window.dispatchEvent(new Event("drive-item-changed"));
+    // 🚀 THE MAGIC: toast.promise handles Loading, Success, and Error automatically!
+    toast.promise(
+      axios.post("/api/folder/create-folder", folderData),
+      {
+        loading: "Creating folder...",
+        success: <b>Folder created!</b>,
+        error: <b>Failed to create folder.</b>,
       }
-    } catch (error) {
-      console.log("Response Error : Error Creating a Folder ");
-    } finally {
-      setIsLoading(false);
-    }
+    )
+      .then(() => {
+        // Success hone par UI reset karo
+        setFolderName("");
+        onClose();
+        window.dispatchEvent(new Event("drive-item-changed"));
+      })
+      .catch((error) => {
+        console.error("Error Creating Folder:", error);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   };
 
   const handleCancel = () => {
@@ -67,7 +75,6 @@ export default function CreateFolderModal({
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleCancel()}>
       {/* 🚀 Updated to use glass-panel */}
       <DialogContent className="glass-panel sm:max-w-md p-0 overflow-hidden border-white/10">
-        
         {/* Header Section */}
         <DialogHeader className="px-6 pt-6 pb-2">
           <DialogTitle className="flex items-center gap-3 text-xl font-bold text-white">
