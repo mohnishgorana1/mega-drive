@@ -22,42 +22,6 @@ export default function BreadCrumb({
   const [breadcrumb, setBreadcrumb] = useState<BreadcrumbItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Handle static root routes (Trash / Favourites)
-  if (pathName === "/dashboard/trash") {
-    return (
-      <div className="flex items-center gap-4">
-        <div className="flex items-center justify-center w-12 h-12 rounded-full glass bg-red-500/10 text-red-500 border border-red-500/20 shadow-lg shadow-red-500/10 shrink-0">
-          <Trash2 size={24} strokeWidth={2.5} />
-        </div>
-        <div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">
-            Trash
-          </h1>
-          <p className="text-gray-500 text-sm font-medium mt-1">
-            Items here can be restored or deleted permanently
-          </p>
-        </div>
-      </div>
-    );
-  }
-  if (pathName === "/dashboard/favourites") {
-    return (
-      <div className="flex items-center gap-4 mb-8">
-        <div className="flex items-center justify-center w-12 h-12 rounded-3xl glass bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 shadow-lg shadow-yellow-500/10">
-          <Star size={24} fill="currentColor" />
-        </div>
-        <div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">
-            Favourites
-          </h1>
-          <p className="text-gray-500 text-sm font-medium">
-            Quick access to your starred items
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   const fetchBreadcrumbPath = async (folderId: string) => {
     setIsLoading(true);
     const path: BreadcrumbItem[] = [];
@@ -101,6 +65,42 @@ export default function BreadCrumb({
       setBreadcrumb([{ name: "My Drive", id: "" }]);
     }
   }, [currentFolderId]);
+
+  // Handle static root routes (Trash / Favourites)
+  if (pathName === "/dashboard/trash") {
+    return (
+      <div className="flex items-center gap-4">
+        <div className="flex items-center justify-center w-12 h-12 rounded-full glass bg-red-500/10 text-red-500 border border-red-500/20 shadow-lg shadow-red-500/10 shrink-0">
+          <Trash2 size={24} strokeWidth={2.5} />
+        </div>
+        <div>
+          <h1 className="text-3xl font-bold text-white tracking-tight">
+            Trash
+          </h1>
+          <p className="text-gray-500 text-sm font-medium mt-1">
+            Items here can be restored or deleted permanently
+          </p>
+        </div>
+      </div>
+    );
+  }
+  if (pathName === "/dashboard/favourites") {
+    return (
+      <div className="flex items-center gap-4 mb-8">
+        <div className="flex items-center justify-center w-12 h-12 rounded-3xl glass bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 shadow-lg shadow-yellow-500/10">
+          <Star size={24} fill="currentColor" />
+        </div>
+        <div>
+          <h1 className="text-3xl font-bold text-white tracking-tight">
+            Favourites
+          </h1>
+          <p className="text-gray-500 text-sm font-medium">
+            Quick access to your starred items
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <nav
