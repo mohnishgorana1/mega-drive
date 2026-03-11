@@ -9,7 +9,7 @@ export default function DriveLayout({ children }: { children: ReactNode }) {
     <div className="flex h-screen w-full overflow-hidden bg-dark-100 text-white relative">
       
       {/* Optional: Add a subtle glowing orb in the background to make the glassmorphism pop */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40vw] h-[40vw] rounded-full bg-blue-500/10 blur-[120px] pointer-events-none" />
+      <div className="absolute top-[-10%] left-[-10%] w-[30vw] h-[30vw] rounded-full bg-blue-500/10 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[30vw] h-[30vw] rounded-full bg-indigo-500/10 blur-[100px] pointer-events-none" />
 
       {/* Sidebar now manages its own width and hide/show logic! */}

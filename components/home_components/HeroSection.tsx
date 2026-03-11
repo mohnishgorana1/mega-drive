@@ -36,7 +36,7 @@ export default function HeroSection({ userId }: HeroSectionProps) {
 
   return (
     <section
-      className="relative z-10 pt-8 pb-20 px-6"
+      className="relative z-10 pt-20 pb-20 px-6"
       aria-label="Introduction"
     >
       {/* 🚀 Wrapper element */}
