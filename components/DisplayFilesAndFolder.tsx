@@ -61,6 +61,7 @@ import { Button } from "./ui/button";
 import EmptyTrashDialog from "./EmptyTrashDialog";
 import BulkDeleteConfirmationDialog from "./BulkDeleteConfirmationDialog";
 import toast from "react-hot-toast";
+import NewItemAction from "./NewItemAction";
 
 interface DisplayFilesAndFolderProps {
   currentFolderId: string | null;
@@ -523,7 +524,7 @@ export default function DisplayFilesAndFolder({
           <BreadCrumb currentFolderId={currentFolderId} />
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3 lg:justify-end shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 lg:justify-end shrink-0">
           {/* PREMIUM PASTE BUTTON */}
           {clipboard &&
             clipboard.items.length > 0 &&
@@ -557,6 +558,11 @@ export default function DisplayFilesAndFolder({
               </div>
             )}
 
+          {currentFolderId !== "trash" && currentFolderId !== "favourites" && (
+            <div className="w-36 md:w-40" >
+              <NewItemAction />
+            </div>
+          )}
           {/* Grid / List View Toggles */}
           <div className="flex items-center glass rounded-full p-1 border border-white/5 h-10">
             <button

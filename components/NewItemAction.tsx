@@ -42,11 +42,11 @@ export default function NewItemAction({ isCollapsed }: NewItemActionProps) {
   }, []);
 
   return (
-    <div className="relative w-full" ref={dropdownRef}>
+    <div className="relative w-full " ref={dropdownRef}>
       {/* The Trigger Button */}
       <button
         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-        className={`flex items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-sm font-semibold hover:bg-blue-700 transition-all shadow-md ${isCollapsed ? "w-full px-0" : "w-full"}`}
+        className={`flex items-center justify-center gap-2 py-2.5 rounded-xl bg-blue-600 text-sm font-semibold hover:bg-blue-700 transition-all shadow-md ${isCollapsed ? "w-full px-0" : "w-full"}`}
       >
         <Plus
           className={`h-5 w-5 shrink-0 transition-transform duration-300 ${isDropdownOpen ? "rotate-45" : ""}`}

@@ -99,6 +99,15 @@ export default function Header() {
         </div>
       )}
 
+      {/* small screen middle part for dashboard  only*/}
+      {
+        !isHomePage  && (
+          <div className="flex md:hidden items-center ms-auto">
+            <Logo isCollapsed={false} />
+          </div>
+        )
+      }
+
       {/* 🔍 MIDDLE SECTION: Global Search Bar (Hide on Home Page and Share Page) */}
       {showSearch && (
         <div
