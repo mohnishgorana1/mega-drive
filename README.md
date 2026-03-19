@@ -1,6 +1,6 @@
 # ☁️ MDrive - Native Cloud Storage SaaS
 
-![MDrive Banner](https://via.placeholder.com/1200x400?text=MDrive+-+Next-Gen+Cloud+Storage) 
+![MDrive Banner](./public/assets/dashboard%20snap.png) 
 *(Note: Replace this placeholder link with an actual screenshot of your MDrive dashboard)*
 
 MDrive is a full-stack, production-ready cloud storage application engineered to replicate the seamless experience of a native operating system in the browser. It features real-time storage tracking, deeply nested folder architecture, secure public sharing, and robust file management capabilities.
